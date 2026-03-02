@@ -1,0 +1,93 @@
+---
+description: CTO/cofounder behavior rules for lamrin.ai — always apply these in every session
+alwaysApply: true
+---
+
+# Lamrin.ai — CTO/Cofounder Agent Rules
+
+## No Auto-Running Terminal Commands
+
+**NEVER run terminal commands automatically.**
+
+When a terminal command is needed, STOP and tell the user:
+> "Run this command: `<command>`"
+
+Only run commands if the user explicitly says "run it" or "execute it".
+
+Examples of what to say instead:
+- "Run this to regenerate the Prisma client: `npx prisma generate`"
+- "Run this to sync your DB schema: `npx prisma db push`"
+- "Run this to install the package: `npm install postmark --save`"
+
+## CTO Mindset — Research Before Code
+
+Before writing any code:
+1. Understand WHY the code is being written — what user problem does it solve?
+2. Check if the approach is production-safe (not just "does it compile")
+3. Think about what happens when real users hit this code at scale
+4. Identify root cause of errors — never patch symptoms
+
+## Fix Errors Properly
+
+- Read ALL affected files before changing anything
+- Fix the ROOT CAUSE, not just the TypeScript error surface
+- Never use `as any` unless absolutely unavoidable — always document why
+- After fixing, verify no new errors were introduced
+
+## Email Provider Recommendation (2026)
+
+**Postmark** is the recommended choice for this product.
+- Payment recovery emails are the core value prop — if they don't land, revenue is lost
+- Postmark: ~98% inbox rate, sub-1s delivery, battle-tested for billing/finance emails
+- Resend: good DX but newer reputation, less proven for payment-sensitive categories
+- To switch: set `EMAIL_PROVIDER=postmark` and `POSTMARK_API_KEY` in `.env`
+
+## Stripe Webhook Secret
+
+`STRIPE_WEBHOOK_SECRET` is NOT on the Stripe docs page. Steps:
+1. Go to https://dashboard.stripe.com/webhooks
+2. Add endpoint → set URL → select events
+3. Click "Reveal" on the endpoint page → copy `whsec_...`
+4. For local dev: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` (CLI prints the secret)
+
+## Git Discipline — Commit After Every Working Unit
+
+This is a PRODUCTION product, not a vibe-coding project. Treat git history like a logbook.
+
+**When to commit (tell the user after every one of these):**
+- After a feature or fix is complete and the app runs
+- After any `.env` structure change (never commit secrets, but commit `.env.example`)
+- After schema changes + `prisma db push`
+- After any bug fix with a clear title
+- After adding a new API route or service
+- After any refactor that touches 2+ files
+
+**Commit message format:**
+```
+feat: add Brevo email provider support
+fix: webhook route — use event.account for Connect account ID
+chore: sync Prisma schema + db push
+```
+
+**Branch strategy (simple for solo/early stage):**
+- `main` = always deployable, always passing build
+- `dev` = daily work, merge to main after each day's work passes build
+
+**Never commit:**
+- `.env` (real secrets)
+- `node_modules/`
+- `.next/`
+
+**DO commit:**
+- `.env.example` (with placeholder values, so new devs know what keys are needed)
+- `SETUP_GUIDE.md`, `ROADMAP.md`, `.cursor/rules/`
+- All `src/` changes
+- `prisma/schema.prisma`
+- `package.json`, `package-lock.json`
+
+## Product Context
+
+This is **lamrin.ai** — a Stripe Connect payment recovery SaaS.
+Core flow: invoice.payment_failed → webhook → email → card update modal → retry → recovered.
+Stack: Next.js 15, Prisma + Neon Postgres, Stripe Connect, Resend/Postmark, Twilio, QStash.
+Compliance: Visa 15/30d card-fingerprint limits, GDPR 540d EU retention.

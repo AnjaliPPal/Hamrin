@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Installation {
+  id              String   @id @default(cuid())
+  stripeAccountId String   @unique @map("stripe_account_id")
+  accessToken     String   @map("access_token")
+  country         String
+  pricingModel    String   @default("flat") @map("pricing_model") // 'ltd' | 'outcome' | 'flat'
+  vauEnabled      Boolean  @default(false) @map("vau_enabled")
+  abuEnabled      Boolean  @default(false) @map("abu_enabled")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations (back references)
+  failedPayments   FailedPayment[]
+  eventsRaw        EventRaw[]
+  recoveredMonthly RecoveredMonthly[]
+  usageTracking    UsageTracking[]
+  ltdInventory     LtdInventory?
+
+  @@map("installations")
+}
+
+model FailedPayment {
+  id              String    @id @default(cuid())
+  installationId  String    @map("installation_id")
+  customerEmail   String    @map("customer_email")
+  amount          Decimal   @db.Decimal(10, 2)
+  failureCode     String?   @map("failure_code")
+  cardFingerprint String?   @map("card_fingerprint")
+  status          String    @default("failed") @map("status")
+  attemptCount    Int       @default(0) @map("attempt_count")
+  retryWindowEnd  DateTime? @map("retry_window_end")
+  nextRetryAt     DateTime? @map("next_retry_at")
+  churnRiskScore  Int       @default(0) @map("churn_risk_score")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  invoiceId       String?   @map("invoice_id")
+  
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  retryLogs    RetryLog[]
+
+  @@index([installationId])
+  @@index([status])
+  @@index([nextRetryAt])
+  @@map("failed_payments")
+}
+
+model RetryLog {
+  id              String   @id @default(cuid())
+  failedPaymentId String   @map("failed_payment_id")
+  cardFingerprint String?  @map("card_fingerprint") // Track at card level for Visa 15/30d compliance
+  attemptNumber   Int      @map("attempt_number")
+  success         Boolean
+  error           String?
+  attemptedAt     DateTime @default(now()) @map("attempted_at")
+
+  failedPayment FailedPayment @relation(fields: [failedPaymentId], references: [id], onDelete: Cascade)
+
+  @@index([failedPaymentId])
+  @@index([attemptedAt])
+  @@index([cardFingerprint, attemptedAt]) // For Visa compliance queries
+  @@map("retry_logs")
+}
+
+model EventRaw {
+  id             String    @id @default(cuid())
+  installationId String    @map("installation_id")
+  stripeEventId  String    @unique @map("stripe_event_id")
+  eventType      String    @map("event_type")
+  rawJson        Json      @map("raw_json")
+  retentionDays  Int       @default(90) @map("retention_days") // 540 (18mo) for EU, 90 for US (GDPR/PSD3)
+  createdAt      DateTime  @default(now()) @map("created_at")
+  deletedAt      DateTime? @map("deleted_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([installationId])
+  @@index([stripeEventId])
+  @@index([retentionDays, createdAt]) // For GDPR purge queries
+  @@map("events_raw")
+}
+
+model RecoveredMonthly {
+  id              String   @id @default(cuid())
+  installationId  String   @map("installation_id")
+  month           String   @map("month") // 'YYYY-MM'
+  recoveredAmount Decimal  @default(0) @map("recovered_amount") @db.Decimal(10, 2)
+  customerCount   Int      @default(0) @map("customer_count")
+  merchantFeeOwed Decimal? @map("merchant_fee_owed") @db.Decimal(10, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@unique([installationId, month])
+  @@index([installationId])
+  @@map("recovered_monthly")
+}
+
+model UsageTracking {
+  id              String    @id @default(cuid())
+  installationId  String    @map("installation_id")
+  billingMonth    String    @map("billing_month")
+  recoveredAmount Decimal   @default(0) @map("recovered_amount") @db.Decimal(10, 2)
+  feeOwed         Decimal   @default(0) @map("fee_owed") @db.Decimal(10, 2)
+  feePaid         Boolean   @default(false) @map("fee_paid")
+  stripeInvoiceId String?   @map("stripe_invoice_id") // Nullable, for Stripe Usage-Based Billing integration later
+  invoiceSentAt   DateTime? @map("invoice_sent_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([installationId])
+  @@index([billingMonth])
+  @@index([stripeInvoiceId])
+  @@map("usage_tracking")
+}
+
+model LtdInventory {
+  id             String  @id @default(cuid())
+  installationId String  @unique @map("installation_id")
+  ltdSold        Int     @default(0) @map("ltd_sold") // Updated atomically via transaction lock (prevents race conditions)
+  maxCapacity    Int     @default(50) @map("max_capacity")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@map("ltd_inventory")
+}
+
