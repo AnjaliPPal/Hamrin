@@ -1,7 +1,7 @@
 import "server-only";
 import { Resend } from "resend";
 import { Client as PostmarkClient, Models } from "postmark";
-import * as Brevo from "@getbrevo/brevo";
+import { BrevoClient } from "@getbrevo/brevo";
 import { env } from "@/lib/env";
 
 const resend = env.RESEND_API_KEY ? new Resend(env.RESEND_API_KEY) : null;
@@ -9,13 +9,9 @@ const postmark =
   env.EMAIL_PROVIDER === "postmark" && env.POSTMARK_API_KEY
     ? new PostmarkClient(env.POSTMARK_API_KEY)
     : null;
-const brevoApi =
+const brevoClient =
   env.EMAIL_PROVIDER === "brevo" && env.BREVO_API_KEY
-    ? (() => {
-        const api = new Brevo.TransactionalEmailsApi();
-        api.setApiKey("api-key", env.BREVO_API_KEY);
-        return api;
-      })()
+    ? new BrevoClient({ apiKey: env.BREVO_API_KEY })
     : null;
 
 function getFromEmail(): string {
@@ -30,20 +26,20 @@ async function sendEmail(params: {
   subject: string;
   html: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const hasProvider = resend || postmark || brevoApi;
+  const hasProvider = resend || postmark || brevoClient;
   if (env.EMAIL_PROVIDER === "none" || !hasProvider) {
     console.log("📧 [Email disabled] Would send:", params.subject, "→", params.to);
     return { success: true };
   }
 
   try {
-    if (env.EMAIL_PROVIDER === "brevo" && brevoApi) {
-      const sendSmtpEmail = new Brevo.SendSmtpEmail();
-      sendSmtpEmail.subject = params.subject;
-      sendSmtpEmail.htmlContent = params.html;
-      sendSmtpEmail.sender = { email: params.from, name: "Lamrin" };
-      sendSmtpEmail.to = [{ email: params.to }];
-      await brevoApi.sendTransacEmail(sendSmtpEmail);
+    if (env.EMAIL_PROVIDER === "brevo" && brevoClient) {
+      await brevoClient.transactionalEmails.sendTransacEmail({
+        subject: params.subject,
+        htmlContent: params.html,
+        sender: { email: params.from, name: "Hamrin" },
+        to: [{ email: params.to }],
+      });
       return { success: true };
     }
 
@@ -316,6 +312,85 @@ export async function sendPreDunningEmail(
     return { success: true };
   } catch (error) {
     console.error("❌ Email service error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Send 50% discount offer to at-risk customer
+ */
+export async function sendDiscountEmail(
+  email: string,
+  data: {
+    customerName?: string;
+    amount: number;
+    updateCardLink: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const subject = "We miss you — 50% off your next month 🎁";
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0;">50% Off Your Next Month</h1>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+            <p>Hi ${data.customerName || "there"},</p>
+            
+            <p>We noticed your payment of <strong>$${data.amount.toFixed(2)}</strong> didn't go through, and we want to help.</p>
+            
+            <div style="background: white; padding: 15px; border-left: 4px solid #10b981; margin: 20px 0;">
+              <p style="margin: 0; color: #059669;"><strong>🎁 Use code SAVE50 for 50% off your next month</strong></p>
+            </div>
+            
+            <p>Update your card below and we'll apply the discount automatically:</p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${data.updateCardLink}" 
+                 style="display: inline-block; background: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                Update Card & Claim 50% Off
+              </a>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+              Questions? Just reply to this email.
+            </p>
+            
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+            
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+              This is an automated message from your subscription provider.
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    const result = await sendEmail({
+      from: getFromEmail(),
+      to: email,
+      subject,
+      html,
+    });
+
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+
+    console.log("✅ Discount offer email sent to:", email);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Discount email error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",

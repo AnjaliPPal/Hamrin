@@ -62,6 +62,14 @@ export const env = {
   // Twilio (optional for SMS)
   TWILIO_ACCOUNT_SID: optionalEnv("TWILIO_ACCOUNT_SID", ""),
   TWILIO_AUTH_TOKEN: optionalEnv("TWILIO_AUTH_TOKEN", ""),
+
+  // QStash (Upstash) — background job scheduling
+  QSTASH_TOKEN: optionalEnv("QSTASH_TOKEN", ""),
+  QSTASH_CURRENT_SIGNING_KEY: optionalEnv("QSTASH_CURRENT_SIGNING_KEY", ""),
+  QSTASH_NEXT_SIGNING_KEY: optionalEnv("QSTASH_NEXT_SIGNING_KEY", ""),
+
+  // LTD — Stripe Payment Link for $749 one-time purchase (optional; if unset, LTD CTA links to Cal.com)
+  STRIPE_LTD_PAYMENT_LINK: optionalEnv("STRIPE_LTD_PAYMENT_LINK", ""),
 } as const;
 
 /**

@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   const res = NextResponse.redirect(url.toString());
 
-  res.cookies.set("lamrin_oauth_csrf", csrf, {
+  res.cookies.set("hamrin_oauth_csrf", csrf, {
     httpOnly: true,
     secure: env.NODE_ENV === "production",
     sameSite: "lax",

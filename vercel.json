@@ -1,0 +1,24 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/retry-engine",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/churn-risk",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/metrics",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/outcome-fees",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/gdpr-purge",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

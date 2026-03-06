@@ -31,11 +31,25 @@ async function detectCountry(accessToken: string): Promise<string> {
   return "US";
 }
 
+function parseState(stateB64: string | null): { pricingModel?: "flat" | "outcome" | "ltd" } {
+  if (!stateB64) return {};
+  try {
+    const json = Buffer.from(stateB64, "base64url").toString("utf-8");
+    const parsed = JSON.parse(json) as { pricingModel?: string };
+    const pm = parsed.pricingModel;
+    if (pm === "outcome" || pm === "ltd" || pm === "flat") return { pricingModel: pm };
+  } catch {
+    // ignore invalid state
+  }
+  return {};
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get("code");
     const error = searchParams.get("error");
+    const state = searchParams.get("state");
 
     if (error) {
       console.error("❌ OAuth error:", error);
@@ -51,6 +65,8 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    const { pricingModel } = parseState(state);
 
     console.log("🔄 Exchanging OAuth code...");
     const oauthResponse = await exchangeOAuthCode(code);
@@ -70,6 +86,7 @@ export async function GET(request: NextRequest) {
       stripeAccountId: oauthResponse.stripe_user_id,
       accessToken: oauthResponse.access_token,
       country,
+      pricingModel: pricingModel ?? "outcome",
     });
 
     await updateComplianceFlags(installation.id, { vauEnabled, abuEnabled });

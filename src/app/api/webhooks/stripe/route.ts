@@ -3,8 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { Prisma } from '@prisma/client';
-import { stripeAdmin } from '@/lib/stripe';
+import { stripeAdmin, createConnectedStripeClient } from '@/lib/stripe';
 import { env } from '@/lib/env';
+import { handleUpcomingInvoice } from '@/services/pre-dunning';
 
 export const runtime = "nodejs";
 
@@ -178,8 +179,19 @@ export async function POST(req: Request) {
         const resolvedInstallationId = await getInstallationId(accountId);
         if (!resolvedInstallationId) break;
 
-        console.log('📅 Invoice upcoming for installation:', resolvedInstallationId, '| invoice:', invoice.id);
-        // TODO: Extract card expiry from invoice and queue pre-dunning email
+        // Get the connected account's Stripe client to retrieve their customer's payment method
+        const connectedInstallation = await prisma.installation.findUnique({
+          where: { id: resolvedInstallationId },
+          select: { accessToken: true },
+        });
+        if (!connectedInstallation) break;
+
+        const connectedClient = createConnectedStripeClient(connectedInstallation.accessToken);
+
+        // Fire and forget — don't hold up the webhook response
+        handleUpcomingInvoice(invoice, connectedClient, resolvedInstallationId)
+          .catch(err => console.error('❌ Pre-dunning handler error:', err));
+
         break;
       }
 
@@ -214,6 +226,77 @@ export async function POST(req: Request) {
               }).catch(err => console.error('Failed to send recovery email:', err));
             });
           });
+        }
+        break;
+      }
+
+      /**
+       * LTD purchase — transaction-safe global inventory (50 spots).
+       * Fires when a customer completes the $749 one-time Payment Link.
+       * Platform payments: event.account is null. Metadata plan=ltd set on Payment Link.
+       */
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+
+        // Only handle LTD (metadata on Payment Link) or mode=payment for our LTD price
+        const isLtd = session.metadata?.plan === 'ltd' || session.metadata?.product === 'ltd';
+        if (!isLtd) break;
+
+        const customerEmail = session.customer_details?.email;
+        if (!customerEmail) {
+          console.warn('⚠️ LTD purchase missing customer email, session:', session.id);
+          break;
+        }
+
+        const PLATFORM_LTD_ID = 'platform_ltd';
+
+        try {
+          await prisma.$transaction(async (tx) => {
+            const installation = await tx.installation.upsert({
+              where: { stripeAccountId: PLATFORM_LTD_ID },
+              create: {
+                stripeAccountId: PLATFORM_LTD_ID,
+                accessToken: 'platform',
+                country: 'US',
+                pricingModel: 'ltd',
+              },
+              update: {},
+            });
+
+            const inv = await tx.ltdInventory.findUnique({
+              where: { installationId: installation.id },
+            });
+
+            if (inv) {
+              if (inv.ltdSold >= inv.maxCapacity) throw new Error('LTD_SOLD_OUT');
+              await tx.ltdInventory.update({
+                where: { installationId: installation.id },
+                data: { ltdSold: { increment: 1 } },
+              });
+            } else {
+              await tx.ltdInventory.create({
+                data: {
+                  installationId: installation.id,
+                  ltdSold: 1,
+                  maxCapacity: 50,
+                },
+              });
+            }
+          });
+
+          console.log('✅ LTD purchase recorded for:', customerEmail);
+
+          import('@/services/email').then(({ sendRecoverySuccessEmail }) => {
+            sendRecoverySuccessEmail(customerEmail, { amount: 749, customerName: customerEmail }).catch(
+              (err) => console.error('Failed to send LTD welcome email:', err)
+            );
+          });
+        } catch (err) {
+          if (err instanceof Error && err.message === 'LTD_SOLD_OUT') {
+            console.warn('⚠️ LTD sold out — rejecting purchase for:', customerEmail);
+          } else {
+            console.error('❌ LTD purchase processing error:', err);
+          }
         }
         break;
       }

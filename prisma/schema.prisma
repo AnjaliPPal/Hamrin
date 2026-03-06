@@ -15,6 +15,7 @@ model Installation {
   pricingModel    String   @default("flat") @map("pricing_model") // 'ltd' | 'outcome' | 'flat'
   vauEnabled      Boolean  @default(false) @map("vau_enabled")
   abuEnabled      Boolean  @default(false) @map("abu_enabled")
+  smsEnabled      Boolean  @default(false) @map("sms_enabled")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -24,6 +25,7 @@ model Installation {
   recoveredMonthly RecoveredMonthly[]
   usageTracking    UsageTracking[]
   ltdInventory     LtdInventory?
+  metricsDaily     MetricsDaily[]
 
   @@map("installations")
 }
@@ -39,9 +41,10 @@ model FailedPayment {
   attemptCount    Int       @default(0) @map("attempt_count")
   retryWindowEnd  DateTime? @map("retry_window_end")
   nextRetryAt     DateTime? @map("next_retry_at")
-  churnRiskScore  Int       @default(0) @map("churn_risk_score")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  invoiceId       String?   @map("invoice_id")
+  churnRiskScore       Int       @default(0) @map("churn_risk_score")
+  discountOfferSentAt  DateTime? @map("discount_offer_sent_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  invoiceId            String?   @map("invoice_id")
   
   installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
   retryLogs    RetryLog[]
@@ -131,5 +134,22 @@ model LtdInventory {
   installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
 
   @@map("ltd_inventory")
+}
+
+model MetricsDaily {
+  id                String   @id @default(cuid())
+  installationId    String   @map("installation_id")
+  date              DateTime @db.Date
+  recoveredTotal   Decimal  @default(0) @map("recovered_total") @db.Decimal(12, 2)
+  failedTotal       Int      @default(0) @map("failed_total")
+  recoveryRate      Decimal  @default(0) @map("recovery_rate") @db.Decimal(5, 2)
+  maxCardAttempts30d Int     @default(0) @map("max_card_attempts_30d")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@unique([installationId, date])
+  @@index([installationId])
+  @@map("metrics_daily")
 }
 

@@ -1,0 +1,34 @@
+---
+description: Hamrin.ai design system — enforces exact visual style from reference screenshots
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# Hamrin.ai Design System
+
+**BEFORE writing any frontend/UI code, read `DESIGN_BRIEF.md` at the project root.**
+
+## Quick Reference
+
+### Fonts
+- **Headlines (hero, section titles):** Lora serif (`font-[family-name:var(--font-lora)]`)
+- **Everything else:** Inter sans-serif (default)
+
+### Colors
+- **Primary CTA:** `bg-[#1E40AF]` (deep blue)
+- **Logo accent:** `text-[#EAB308]` (golden yellow)
+- **Success/checks:** `text-green-500` / `bg-green-500`
+- **Hero bg:** `from-[#FDF8EF] via-[#FEFCF7] to-white` (warm cream gradient)
+- **Body bg:** white or `bg-gray-50` for alternating sections
+
+### Rules
+1. NO dark backgrounds on landing page — warm and light always
+2. NO sans-serif for hero/section headlines — use Lora serif
+3. NO emerald/teal as primary action color — primary is deep blue
+4. Feature pills use soft pastel bg + darker text of same hue
+5. Cards: white bg, gray-200 border, rounded-xl, shadow-lg
+6. Generous spacing: py-20 to py-24 between major sections
+7. Max width 1200px for nav/footer, 800px for hero text, 1100px for feature grids
+8. Testimonial key phrases have yellow underline decoration
+9. Browser frame mocks have 3 colored dots (green, yellow, red)
+10. Uppercase labels: text-xs font-semibold text-gray-400 tracking-[0.2em]
