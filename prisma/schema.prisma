@@ -20,12 +20,14 @@ model Installation {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations (back references)
-  failedPayments   FailedPayment[]
-  eventsRaw        EventRaw[]
-  recoveredMonthly RecoveredMonthly[]
-  usageTracking    UsageTracking[]
-  ltdInventory     LtdInventory?
-  metricsDaily     MetricsDaily[]
+  failedPayments    FailedPayment[]
+  eventsRaw         EventRaw[]
+  recoveredMonthly  RecoveredMonthly[]
+  usageTracking     UsageTracking[]
+  ltdInventory      LtdInventory?
+  metricsDaily      MetricsDaily[]
+  cancelFlowConfig  CancelFlowConfig?
+  cancelFlowSessions CancelFlowSession[]
 
   @@map("installations")
 }
@@ -159,5 +161,52 @@ model MetricsDaily {
   @@unique([installationId, date])
   @@index([installationId])
   @@map("metrics_daily")
+}
+
+// Module 3: Cancel Flow Widget
+
+model CancelFlowConfig {
+  id             String   @id @default(cuid())
+  installationId String   @unique @map("installation_id")
+  enabled        Boolean  @default(true)
+  // JSON array of offer objects: [{ type: 'discount'|'pause', discountPercent?, discountMonths?, pauseMonths? }]
+  offers         Json     @default("[]")
+  // JSON array of reason option strings
+  reasonOptions  Json     @default("[\"Too expensive\",\"Not using it enough\",\"Missing features\",\"Switching to competitor\",\"Other\"]")
+  brandColor     String   @default("#2563eb") @map("brand_color")
+  brandLogo      String?  @map("brand_logo")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@map("cancel_flow_configs")
+}
+
+model CancelFlowSession {
+  id                     String    @id @default(cuid())
+  installationId         String    @map("installation_id")
+  stripeCustomerId       String    @map("stripe_customer_id")
+  stripeSubscriptionId   String    @map("stripe_subscription_id")
+  reason                 String?
+  reasonText             String?   @map("reason_text")
+  // 'discount' | 'pause' | 'none'
+  offerType              String?   @map("offer_type")
+  offerShown             Boolean   @default(false) @map("offer_shown")
+  offerAccepted          Boolean   @default(false) @map("offer_accepted")
+  // JSON snapshot of the offer that was shown: { type, discountPercent?, discountMonths?, pauseMonths? }
+  offerSnapshot          Json?     @map("offer_snapshot")
+  feedbackText           String?   @map("feedback_text")
+  competitorName         String?   @map("competitor_name")
+  savedAt                DateTime? @map("saved_at")
+  cancelledAt            DateTime? @map("cancelled_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([installationId])
+  @@index([stripeSubscriptionId])
+  @@index([savedAt])
+  @@map("cancel_flow_sessions")
 }
 

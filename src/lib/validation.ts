@@ -48,3 +48,56 @@ export const invoiceIdSchema = z
 export const paymentMethodIdSchema = z
   .string()
   .regex(/^pm_[a-zA-Z0-9]+$/, "Invalid Stripe payment method ID format");
+
+// Stripe subscription ID validation
+export const stripeSubscriptionIdSchema = z
+  .string()
+  .regex(/^sub_[a-zA-Z0-9]+$/, "Invalid Stripe subscription ID format");
+
+// Stripe customer ID validation
+export const stripeCustomerIdSchema = z
+  .string()
+  .regex(/^cus_[a-zA-Z0-9]+$/, "Invalid Stripe customer ID format");
+
+// Cancel flow offer object
+const cancelFlowOfferSchema = z.object({
+  type: z.enum(["discount", "pause"]),
+  discountPercent: z.number().min(1).max(100).optional(),
+  discountMonths: z.number().min(1).max(24).optional(),
+  pauseMonths: z.number().min(1).max(6).optional(),
+});
+
+// Cancel Flow Config PATCH
+export const cancelFlowConfigUpdateSchema = z.object({
+  enabled: z.boolean().optional(),
+  offers: z.array(cancelFlowOfferSchema).max(5).optional(),
+  reasonOptions: z.array(z.string().min(1).max(100)).min(1).max(10).optional(),
+  brandColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Invalid hex color").optional(),
+  brandLogo: z.string().url("Invalid URL").optional().or(z.literal("")),
+});
+
+// Cancel Flow Session create
+export const cancelFlowSessionCreateSchema = z.object({
+  installationId: z.string().min(1),
+  stripeCustomerId: stripeCustomerIdSchema,
+  stripeSubscriptionId: stripeSubscriptionIdSchema,
+});
+
+// Cancel Flow Save (customer accepts offer)
+export const cancelFlowSaveSchema = z.object({
+  sessionId: z.string().min(1),
+  reason: z.string().min(1).max(100),
+  reasonText: z.string().max(500).optional(),
+  offerType: z.enum(["discount", "pause"]),
+  feedbackText: z.string().max(500).optional(),
+  competitorName: z.string().max(100).optional(),
+});
+
+// Cancel Flow Cancel (customer proceeds with cancellation)
+export const cancelFlowCancelSchema = z.object({
+  sessionId: z.string().min(1),
+  reason: z.string().min(1).max(100),
+  reasonText: z.string().max(500).optional(),
+  feedbackText: z.string().max(500).optional(),
+  competitorName: z.string().max(100).optional(),
+});
