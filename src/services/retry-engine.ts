@@ -64,9 +64,14 @@ async function checkVisaCompliance(cardFingerprint: string | null): Promise<bool
 }
 
 /**
- * Process a single failed payment retry
+ * Process a single failed payment retry.
+ * @param source - attribution source; 'card_update' when triggered by customer updating their card,
+ *                 'retry_engine' when triggered by the cron retry engine.
  */
-export async function processRetry(failedPaymentId: string): Promise<{
+export async function processRetry(
+  failedPaymentId: string,
+  source: 'card_update' | 'retry_engine' = 'retry_engine',
+): Promise<{
   success: boolean;
   error?: string;
 }> {
@@ -82,10 +87,12 @@ export async function processRetry(failedPaymentId: string): Promise<{
   }
 
   // Check guards
+  const abandonedAt = new Date();
+
   if (failedPayment.attemptCount >= 5) {
     await prisma.failedPayment.update({
       where: { id: failedPaymentId },
-      data: { status: 'abandoned' },
+      data: { status: 'abandoned', abandonedAt },
     });
     return { success: false, error: 'Max attempts reached' };
   }
@@ -93,7 +100,7 @@ export async function processRetry(failedPaymentId: string): Promise<{
   if (failedPayment.failureCode && DO_NOT_RETRY_CODES.includes(failedPayment.failureCode)) {
     await prisma.failedPayment.update({
       where: { id: failedPaymentId },
-      data: { status: 'abandoned' },
+      data: { status: 'abandoned', abandonedAt },
     });
     return { success: false, error: 'Do not retry code' };
   }
@@ -101,7 +108,7 @@ export async function processRetry(failedPaymentId: string): Promise<{
   if (failedPayment.retryWindowEnd && failedPayment.retryWindowEnd < new Date()) {
     await prisma.failedPayment.update({
       where: { id: failedPaymentId },
-      data: { status: 'abandoned' },
+      data: { status: 'abandoned', abandonedAt },
     });
     return { success: false, error: 'Retry window expired' };
   }
@@ -111,7 +118,7 @@ export async function processRetry(failedPaymentId: string): Promise<{
   if (!visaCompliant) {
     await prisma.failedPayment.update({
       where: { id: failedPaymentId },
-      data: { status: 'abandoned' },
+      data: { status: 'abandoned', abandonedAt },
     });
     return { success: false, error: 'Visa 15/30d limit reached for this card' };
   }
@@ -142,12 +149,15 @@ export async function processRetry(failedPaymentId: string): Promise<{
     });
 
     if (success) {
-      // Mark as recovered
+      // Mark as recovered with attribution — but only set source if not already set
+      // (card_update route stamps its own attribution after calling processRetry)
       await prisma.failedPayment.update({
         where: { id: failedPaymentId },
         data: {
           status: 'recovered',
           attemptCount: attemptNumber,
+          recoveredAt: new Date(),
+          recoverySource: source,
         },
       });
 

@@ -58,6 +58,8 @@ export const env = {
 
   // Security
   CRON_SECRET: optionalEnv("CRON_SECRET", ""),
+  /** Session cookie signing. Min 32 chars in production. Generate: openssl rand -hex 32 */
+  SESSION_SECRET: optionalEnv("SESSION_SECRET", ""),
 
   // Twilio (optional for SMS)
   TWILIO_ACCOUNT_SID: optionalEnv("TWILIO_ACCOUNT_SID", ""),

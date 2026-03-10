@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Trigger immediate retry
-    const retryResult = await processRetry(failedPayment.id);
+    // Trigger immediate retry — source='card_update' so attribution is stamped inside processRetry
+    const retryResult = await processRetry(failedPayment.id, "card_update");
 
     if (retryResult.success) {
       return NextResponse.json({

@@ -1,16 +1,29 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { prisma } from '@/lib/prisma';
 import { getDashboardMetrics, type DashboardMetrics } from '@/services/dashboard';
 import { SendDiscountButton } from '@/components/send-discount-button';
 import { SmsToggle } from '@/components/sms-toggle';
+import { getSessionFromToken, isSessionEnabled, SESSION_COOKIE_NAME } from '@/lib/session';
 
 export default async function DashboardPage({
   searchParams,
 }: {
   searchParams: Promise<{ installation?: string }>;
 }) {
-  const { installation: installationId } = await searchParams;
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const session = getSessionFromToken(sessionToken);
+  const { installation: installationIdFromQuery } = await searchParams;
+
+  let installationId: string | null = null;
+  if (isSessionEnabled()) {
+    if (session) installationId = session.installationId;
+    else redirect('/onboard');
+  } else {
+    installationId = installationIdFromQuery ?? null;
+  }
 
   if (!installationId) redirect('/');
 
@@ -56,7 +69,15 @@ export default async function DashboardPage({
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900">Recovery Dashboard</h1>
             <p className="text-zinc-500 text-sm mt-0.5">{installation.stripeAccountId.substring(0, 20)}...</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {isSessionEnabled() && (
+              <Link
+                href="/api/auth/logout"
+                className="text-sm text-zinc-500 hover:text-zinc-700"
+              >
+                Log out
+              </Link>
+            )}
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white border border-zinc-200">
               <span className={`w-2 h-2 rounded-full mr-2 ${installation.vauEnabled ? 'bg-emerald-500' : 'bg-amber-400'}`}></span>
               VAU: {installation.vauEnabled ? 'Active' : 'Pending'}

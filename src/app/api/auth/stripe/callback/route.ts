@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { exchangeOAuthCode, enableAccountUpdaters, createConnectedStripeClient } from "@/lib/stripe";
 import { createInstallation, updateComplianceFlags } from "@/lib/db";
 import { env } from "@/lib/env";
+import {
+  createSessionToken,
+  getSessionCookieOptions,
+  isSessionEnabled,
+  SESSION_COOKIE_NAME,
+} from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -93,9 +99,20 @@ export async function GET(request: NextRequest) {
 
     console.log("✅ Installation created:", installation.id);
 
-    return NextResponse.redirect(
-      `${env.NEXT_PUBLIC_APP_URL}/dashboard?installation=${installation.id}`
-    );
+    const redirectUrl = `${env.NEXT_PUBLIC_APP_URL}/dashboard`;
+
+    if (isSessionEnabled()) {
+      const token = createSessionToken({
+        installationId: installation.id,
+        stripeAccountId: installation.stripeAccountId,
+        issuedAt: Date.now(),
+      });
+      const res = NextResponse.redirect(redirectUrl);
+      res.cookies.set(SESSION_COOKIE_NAME, token, getSessionCookieOptions());
+      return res;
+    }
+
+    return NextResponse.redirect(`${redirectUrl}?installation=${installation.id}`);
   } catch (err) {
     console.error("❌ OAuth callback error:", err);
     const msg = err instanceof Error ? err.message : "Unknown error";

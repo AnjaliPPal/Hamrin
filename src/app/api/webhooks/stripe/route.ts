@@ -143,31 +143,56 @@ export async function POST(req: Request) {
         const nextRetryAt = new Date();
         nextRetryAt.setHours(nextRetryAt.getHours() + 6);
 
-        await prisma.failedPayment.create({
-          data: {
-            installationId: resolvedInstallationId,
-            customerEmail: invoice.customer_email ?? 'unknown@example.com',
-            amount: invoice.amount_due / 100,
-            failureCode,
-            cardFingerprint,
-            status: 'failed',
-            attemptCount: 0,
-            retryWindowEnd,
-            nextRetryAt,
-            invoiceId: invoice.id,
-          },
-        });
+        // Idempotency: skip if we already have a record for this invoice
+        const existing = invoice.id
+          ? await prisma.failedPayment.findFirst({ where: { invoiceId: invoice.id }, select: { id: true, failedEmailSentAt: true } })
+          : null;
 
-        console.log('✅ Created failed_payment record for invoice:', invoice.id);
+        let failedPaymentId: string;
+        if (existing) {
+          failedPaymentId = existing.id;
+          console.log('⚠️ Duplicate invoice.payment_failed for invoice:', invoice.id, '— skipping create');
+        } else {
+          const created = await prisma.failedPayment.create({
+            data: {
+              installationId: resolvedInstallationId,
+              customerEmail: invoice.customer_email ?? 'unknown@example.com',
+              amount: invoice.amount_due / 100,
+              failureCode,
+              cardFingerprint,
+              status: 'failed',
+              attemptCount: 0,
+              retryWindowEnd,
+              nextRetryAt,
+              invoiceId: invoice.id,
+            },
+          });
+          failedPaymentId = created.id;
+          console.log('✅ Created failed_payment record for invoice:', invoice.id);
+        }
 
-        const updateCardLink = `${env.NEXT_PUBLIC_APP_URL}/recover?invoice_id=${invoice.id}`;
-        import('@/services/email').then(({ sendPaymentFailedEmail }) => {
-          sendPaymentFailedEmail(invoice.customer_email ?? '', {
-            amount: invoice.amount_due / 100,
-            failureReason: failureCode === 'unknown' ? 'Payment declined' : `Error: ${failureCode}`,
-            updateCardLink,
-          }).catch(err => console.error('Failed to send email:', err));
-        });
+        // Email idempotency: only send if we haven't sent already
+        const alreadyEmailed = existing?.failedEmailSentAt != null;
+        if (!alreadyEmailed && invoice.customer_email) {
+          const updateCardLink = `${env.NEXT_PUBLIC_APP_URL}/recover?invoice_id=${invoice.id}`;
+          const fpId = failedPaymentId;
+          import('@/services/email').then(({ sendPaymentFailedEmail }) => {
+            sendPaymentFailedEmail(invoice.customer_email ?? '', {
+              amount: invoice.amount_due / 100,
+              failureReason: failureCode === 'unknown' ? 'Payment declined' : `Error: ${failureCode}`,
+              updateCardLink,
+            })
+              .then((result) => {
+                if (result.success) {
+                  return prisma.failedPayment.update({
+                    where: { id: fpId },
+                    data: { failedEmailSentAt: new Date() },
+                  });
+                }
+              })
+              .catch(err => console.error('Failed to send failed-payment email:', err));
+          });
+        }
         break;
       }
 
@@ -207,23 +232,34 @@ export async function POST(req: Request) {
         if (paymentMethod.type === 'card' && paymentMethod.card?.fingerprint) {
           const cardFingerprint = paymentMethod.card.fingerprint;
 
+          const now = new Date();
           await prisma.failedPayment.updateMany({
             where: { installationId: resolvedInstallationId, cardFingerprint, status: 'failed' },
-            data: { status: 'recovered' },
+            data: { status: 'recovered', recoveredAt: now, recoverySource: 'auto_updater' },
           });
 
-          console.log('✅ Marked payments as recovered for card:', cardFingerprint);
+          console.log('✅ Marked payments as recovered (auto_updater) for card:', cardFingerprint);
 
           const recoveredPayments = await prisma.failedPayment.findMany({
-            where: { installationId: resolvedInstallationId, cardFingerprint, status: 'recovered' },
-            select: { customerEmail: true, amount: true },
+            where: { installationId: resolvedInstallationId, cardFingerprint, recoverySource: 'auto_updater', recoveredAt: now },
+            select: { id: true, customerEmail: true, amount: true, recoveryEmailSentAt: true },
           });
 
           import('@/services/email').then(({ sendRecoverySuccessEmail }) => {
             recoveredPayments.forEach(payment => {
+              if (payment.recoveryEmailSentAt) return;
               sendRecoverySuccessEmail(payment.customerEmail, {
                 amount: Number(payment.amount),
-              }).catch(err => console.error('Failed to send recovery email:', err));
+              })
+                .then((result) => {
+                  if (result.success) {
+                    return prisma.failedPayment.update({
+                      where: { id: payment.id },
+                      data: { recoveryEmailSentAt: new Date() },
+                    });
+                  }
+                })
+                .catch(err => console.error('Failed to send recovery email:', err));
             });
           });
         }

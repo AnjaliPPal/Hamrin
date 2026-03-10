@@ -3,6 +3,14 @@ import { prisma } from "@/lib/prisma";
 
 const EU_COUNTRIES = ["GB","IE","DE","FR","NL","AT","BE","IT","ES","PT","PL","CZ","GR","HU","RO","SE","FI","DK","BG","HR","SK","LT","SI","LV","EE","CY","LU","MT"];
 
+export interface RecoveryAttribution {
+  card_update: number;
+  retry_engine: number;
+  auto_updater: number;
+  unknown: number;
+  total: number;
+}
+
 export interface DashboardMetrics {
   totalRecovered: number;
   recoveryRate: number;
@@ -27,6 +35,7 @@ export interface DashboardMetrics {
   };
   thisMonthFee: number | null;
   pricingModel: string;
+  recoveryAttribution: RecoveryAttribution;
 }
 
 export async function getDashboardMetrics(installationId: string): Promise<DashboardMetrics> {
@@ -43,7 +52,7 @@ export async function getDashboardMetrics(installationId: string): Promise<Dashb
   monthStart.setHours(0, 0, 0, 0);
   const month = monthStart.toISOString().slice(0, 7);
 
-  const [recoveredPayments, allPayments, retryLogs, atRiskPayments, thisMonthFee] =
+  const [recoveredPayments, allPayments, retryLogs, atRiskPayments, thisMonthFee, attributionGroups] =
     await Promise.all([
       prisma.failedPayment.findMany({
         where: { installationId, status: "recovered" },
@@ -72,6 +81,11 @@ export async function getDashboardMetrics(installationId: string): Promise<Dashb
             select: { feeOwed: true },
           })
         : Promise.resolve(null),
+      prisma.failedPayment.groupBy({
+        by: ["recoverySource"],
+        where: { installationId, status: "recovered" },
+        _count: { id: true },
+      }),
     ]);
 
   const totalRecovered = recoveredPayments.reduce((sum, p) => sum + Number(p.amount), 0);
@@ -112,6 +126,20 @@ export async function getDashboardMetrics(installationId: string): Promise<Dashb
     };
   });
 
+  // Recovery attribution breakdown
+  const attributionMap: Record<string, number> = {};
+  attributionGroups.forEach((group) => {
+    const key = group.recoverySource ?? "unknown";
+    attributionMap[key] = group._count.id;
+  });
+  const recoveryAttribution: RecoveryAttribution = {
+    card_update: attributionMap["card_update"] ?? 0,
+    retry_engine: attributionMap["retry_engine"] ?? 0,
+    auto_updater: attributionMap["auto_updater"] ?? 0,
+    unknown: attributionMap["unknown"] ?? 0,
+    total: totalRecoveredCount,
+  };
+
   // GDPR info
   const isEU = EU_COUNTRIES.includes(installation.country.toUpperCase());
   const retentionDays = isEU ? 540 : 90;
@@ -136,5 +164,6 @@ export async function getDashboardMetrics(installationId: string): Promise<Dashb
     },
     thisMonthFee: thisMonthFee ? Number(thisMonthFee.feeOwed) : null,
     pricingModel: installation.pricingModel,
+    recoveryAttribution,
   };
 }

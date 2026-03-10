@@ -1,11 +1,36 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const SESSION_COOKIE_NAME = "hamrin_session";
+
+/** Routes that require a valid session when SESSION_SECRET is set. */
+const PROTECTED_PATHS = ["/dashboard", "/api/settings", "/api/discount/send", "/api/discount"];
+
+function isProtectedPath(pathname: string): boolean {
+  return PROTECTED_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
 /**
  * Security middleware for Next.js 15
- * Implements security headers and request validation
+ * Implements security headers, request validation, and session-based route protection.
  */
 export function middleware(request: NextRequest) {
+  // Session protection: when SESSION_SECRET is set, require session cookie on protected routes
+  const sessionSecret = process.env.SESSION_SECRET ?? "";
+  const sessionEnabled = sessionSecret.length >= 32;
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+
+  if (sessionEnabled && isProtectedPath(request.nextUrl.pathname)) {
+    if (!sessionCookie || sessionCookie.length < 10) {
+      if (request.nextUrl.pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const url = request.nextUrl.clone();
+      url.pathname = "/onboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
   const response = NextResponse.next();
 
   // Security headers (2026 best practices)
@@ -20,9 +45,7 @@ export function middleware(request: NextRequest) {
     "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.stripe.com https://*.stripe.com; frame-src https://js.stripe.com https://hooks.stripe.com;"
   );
 
-  // API route protection
   if (request.nextUrl.pathname.startsWith("/api/")) {
-    // Add rate limiting headers (implement actual rate limiting in production)
     response.headers.set("X-RateLimit-Limit", "100");
     response.headers.set("X-RateLimit-Remaining", "99");
   }

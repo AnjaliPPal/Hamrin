@@ -104,7 +104,42 @@ Every feature must handle:
 
 ---
 
-## ⛔ RULE #5: CODING STANDARDS (NON-NEGOTIABLE)
+## ⛔ RULE #5: HOW TO END EVERY MODULE — "YOUR ACTIONS" FORMAT (NON-NEGOTIABLE)
+
+After every completed module or feature, the AI MUST end with a **"Your actions"** section.
+
+Every step is a turn-by-turn walkthrough — written as if guiding someone doing this for the first time. No vague bullets.
+
+**Every step must state:**
+- The exact URL to open (e.g. `https://dashboard.stripe.com/test/apikeys`)
+- Exactly what to click or find on that page
+- Exactly what to copy (field name + what the value looks like)
+- Exactly which file to open and which line to paste into
+- Exactly what terminal command to run
+
+**Required sections in every "Your actions":**
+1. **Env vars** — exact URL → what to click → what to copy → open exact file → paste at exact line
+2. **Terminal commands** — listed in order, one per line, copy-pasteable
+3. **UI verification** — exactly what to click and exactly what you should see when it works
+4. **One likely failure** — the exact error text, and the exact fix (which file, which line, what to change to what)
+
+**Example format:**
+> Step 1: Go to https://dashboard.stripe.com/test/apikeys
+> Click "Reveal test key" next to "Secret key"
+> Copy the value — it starts with `sk_test_`
+>
+> Step 2: Open `lamrin/.env` in Cursor
+> Find the line that says `STRIPE_SECRET_KEY=`
+> Replace everything after `=` with the value you copied
+>
+> Step 3: In your terminal (inside `lamrin/`) run:
+> `npm run dev`
+
+**I will NEVER skip this section at the end of a module.**
+
+---
+
+## ⛔ RULE #6: CODING STANDARDS (NON-NEGOTIABLE)
 
 - Every server file starts with `import "server-only"`
 - No `as any` — use proper types or `unknown` with type guards
@@ -118,7 +153,7 @@ Every feature must handle:
 
 ---
 
-## ⛔ RULE #6: COMPLIANCE IS LOAD-BEARING CODE
+## ⛔ RULE #7: COMPLIANCE IS LOAD-BEARING CODE
 
 These are not "nice to haves" — violations cause Stripe account bans and GDPR fines.
 
@@ -223,5 +258,7 @@ Gmail sender = high spam risk for payment emails. Switch to domain email before 
 
 ### DB migration status
 
-`npx prisma db push` has NOT been confirmed run yet.
-Run this before any testing that touches the database.
+Module 1 (Session Auth) and Module 2 (Recovery Attribution) schema changes have been applied.
+`npx prisma db push` was run for Module 2 — new fields: `recovered_at`, `recovery_source`, `abandoned_at`, `failed_email_sent_at`, `recovery_email_sent_at` on `failed_payments` table.
+`npx prisma generate` run after push.
+Next: Module 3.

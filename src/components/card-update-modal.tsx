@@ -8,9 +8,8 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { env } from "@/lib/env";
 
-const stripePromise = loadStripe(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 interface CardUpdateModalProps {
   invoiceId: string;

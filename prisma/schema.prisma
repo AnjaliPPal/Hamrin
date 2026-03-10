@@ -45,13 +45,21 @@ model FailedPayment {
   discountOfferSentAt  DateTime? @map("discount_offer_sent_at")
   createdAt            DateTime  @default(now()) @map("created_at")
   invoiceId            String?   @map("invoice_id")
-  
+
+  // Module 2: Recovery attribution
+  recoveredAt         DateTime? @map("recovered_at")
+  recoverySource      String?   @map("recovery_source") // 'card_update' | 'retry_engine' | 'auto_updater' | 'unknown'
+  abandonedAt         DateTime? @map("abandoned_at")
+  failedEmailSentAt   DateTime? @map("failed_email_sent_at")
+  recoveryEmailSentAt DateTime? @map("recovery_email_sent_at")
+
   installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
   retryLogs    RetryLog[]
 
   @@index([installationId])
   @@index([status])
   @@index([nextRetryAt])
+  @@index([recoverySource])
   @@map("failed_payments")
 }
 
