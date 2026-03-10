@@ -1,6 +1,6 @@
-# Lamrin.ai — Payment Recovery Platform
+# Hamrin.ai — Payment Recovery Platform
 
-Recover failed subscription payments automatically. Merchants connect Stripe via OAuth; lamrin handles the dunning, retries, and card updates — compliant with Visa/MC rules and GDPR.
+Recover failed subscription payments automatically. Merchants connect Stripe via OAuth; hamrin handles the dunning, retries, and card updates — compliant with Visa/MC rules and GDPR.
 
 ## How it works
 
