@@ -267,6 +267,132 @@ export async function POST(req: Request) {
       }
 
       /**
+       * Module 4: Pause subscription flow.
+       * Sync pause/resume state to PausedSubscription for Pause Wall and analytics.
+       */
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const accountId = event.account;
+        if (!accountId) break;
+
+        const resolvedInstallationId = await getInstallationId(accountId);
+        if (!resolvedInstallationId) break;
+
+        const customerId = typeof subscription.customer === 'string'
+          ? subscription.customer
+          : subscription.customer?.id;
+        if (!customerId) break;
+
+        const subId = subscription.id;
+        const pauseCollection = subscription.pause_collection ?? null;
+
+        try {
+          if (pauseCollection?.resumes_at) {
+            // Subscription is paused — upsert PausedSubscription
+            const resumeAt = new Date(pauseCollection.resumes_at * 1000);
+            const now = new Date();
+            await prisma.pausedSubscription.upsert({
+              where: { stripeSubscriptionId: subId },
+              create: {
+                installationId: resolvedInstallationId,
+                stripeCustomerId: customerId,
+                stripeSubscriptionId: subId,
+                pausedAt: now,
+                resumeAt,
+                pauseSource: 'manual',
+              },
+              update: {
+                pausedAt: now,
+                resumeAt,
+                resumedAt: null,
+              },
+            });
+            console.log('✅ PausedSubscription synced (paused):', subId);
+          } else {
+            // Subscription not paused — if we have a record, mark as resumed
+            const existing = await prisma.pausedSubscription.findUnique({
+              where: { stripeSubscriptionId: subId },
+              select: { id: true },
+            });
+            if (existing) {
+              await prisma.pausedSubscription.update({
+                where: { stripeSubscriptionId: subId },
+                data: { resumedAt: new Date() },
+              });
+              console.log('✅ PausedSubscription synced (resumed):', subId);
+            }
+          }
+        } catch (err) {
+          console.error('⚠️ PausedSubscription sync error:', err);
+        }
+        break;
+      }
+
+      /**
+       * Module 6: Reactivation Campaigns.
+       * When a subscription is deleted (cancelled), create a ChurnedCustomer record
+       * so the daily reactivation cron can send win-back emails.
+       */
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        const accountId = event.account;
+        if (!accountId) break;
+
+        const resolvedInstallationId = await getInstallationId(accountId);
+        if (!resolvedInstallationId) break;
+
+        const customerId = typeof subscription.customer === 'string'
+          ? subscription.customer
+          : subscription.customer?.id;
+        if (!customerId) break;
+
+        // Fetch customer email from Stripe (not always on the subscription object)
+        let customerEmail = '';
+        try {
+          const customer = await stripeAdmin.customers.retrieve(customerId, {
+            stripeAccount: accountId,
+          });
+          if (!customer.deleted) {
+            customerEmail = customer.email ?? '';
+          }
+        } catch (err) {
+          console.error('⚠️ Could not fetch customer for reactivation:', err);
+        }
+
+        if (!customerEmail) {
+          console.warn('⚠️ No customer email — skipping ChurnedCustomer for subscription:', subscription.id);
+          break;
+        }
+
+        // Pull cancel reason from the latest CancelFlowSession if one exists
+        const lastSession = await prisma.cancelFlowSession.findFirst({
+          where: { installationId: resolvedInstallationId, stripeCustomerId: customerId },
+          orderBy: { createdAt: 'desc' },
+          select: { reason: true },
+        });
+
+        // Idempotency: only create if not already recorded
+        const existingChurned = await prisma.churnedCustomer.findFirst({
+          where: { installationId: resolvedInstallationId, stripeCustomerId: customerId },
+          select: { id: true },
+        });
+
+        if (!existingChurned) {
+          await prisma.churnedCustomer.create({
+            data: {
+              installationId: resolvedInstallationId,
+              stripeCustomerId: customerId,
+              customerEmail,
+              cancelledAt: new Date(),
+              cancelReason: lastSession?.reason ?? null,
+            },
+          });
+          console.log('✅ ChurnedCustomer created for:', customerEmail);
+        }
+        break;
+      }
+
+      /**
        * LTD purchase — transaction-safe global inventory (50 spots).
        * Fires when a customer completes the $749 one-time Payment Link.
        * Platform payments: event.account is null. Metadata plan=ltd set on Payment Link.

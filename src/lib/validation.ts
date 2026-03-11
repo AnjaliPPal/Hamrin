@@ -101,3 +101,21 @@ export const cancelFlowCancelSchema = z.object({
   feedbackText: z.string().max(500).optional(),
   competitorName: z.string().max(100).optional(),
 });
+
+// Wall check query params (Module 5)
+export const wallCheckQuerySchema = z.object({
+  customer_email: z.string().email("Invalid email"),
+  installation_id: z.string().min(1, "installation_id required"),
+});
+
+// Wall pause-check query params
+export const wallPauseCheckQuerySchema = z.object({
+  customer_email: z.string().email("Invalid email"),
+  installation_id: z.string().min(1, "installation_id required"),
+});
+
+// Wall resume body
+export const wallResumeSchema = z.object({
+  installation_id: z.string().min(1),
+  subscription_id: stripeSubscriptionIdSchema,
+});

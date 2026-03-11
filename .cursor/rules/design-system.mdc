@@ -8,7 +8,9 @@ alwaysApply: false
 
 **BEFORE writing any frontend/UI code, read `DESIGN_BRIEF.md` at the project root.**
 
-## Quick Reference
+---
+
+## LANDING PAGE Quick Reference (Sections 2–9 of DESIGN_BRIEF.md)
 
 ### Fonts
 - **Headlines (hero, section titles):** Lora serif (`font-[family-name:var(--font-lora)]`)
@@ -21,10 +23,10 @@ alwaysApply: false
 - **Hero bg:** `from-[#FDF8EF] via-[#FEFCF7] to-white` (warm cream gradient)
 - **Body bg:** white or `bg-gray-50` for alternating sections
 
-### Rules
+### Landing Rules
 1. NO dark backgrounds on landing page — warm and light always
 2. NO sans-serif for hero/section headlines — use Lora serif
-3. NO emerald/teal as primary action color — primary is deep blue
+3. NO emerald/teal as primary action color on landing page — primary is deep blue
 4. Feature pills use soft pastel bg + darker text of same hue
 5. Cards: white bg, gray-200 border, rounded-xl, shadow-lg
 6. Generous spacing: py-20 to py-24 between major sections
@@ -32,3 +34,61 @@ alwaysApply: false
 8. Testimonial key phrases have yellow underline decoration
 9. Browser frame mocks have 3 colored dots (green, yellow, red)
 10. Uppercase labels: text-xs font-semibold text-gray-400 tracking-[0.2em]
+
+---
+
+## DASHBOARD Quick Reference (Section 10 of DESIGN_BRIEF.md)
+
+**Use ONLY this section for `/dashboard/*` and all authenticated pages. Ignore landing rules above.**
+
+### Vibe (3 reference screenshots)
+- **Nixtio dashboard:** light cool-white bg `#F0F4FF`, white cards, electric blue + mint green charts
+- **Getillustrations:** mint `#2ECC88` + black outlines for illustrations and illustration-style accents
+- **Playground/Emote:** ultra-bold black Inter headlines, pastel card bgs, `rounded-2xl` cards
+
+### Dashboard Fonts
+- **ONE font only:** Inter (no Lora ever)
+- **KPI numbers:** `text-[36px] font-extrabold tracking-tight text-gray-900` — heavy and punchy
+- **Page title:** `text-3xl font-extrabold tracking-tight text-gray-900`
+- **Card title:** `text-[15px] font-semibold text-gray-900`
+- **Body / labels:** `text-sm text-gray-600` or `text-xs text-gray-400`
+
+### Dashboard Colors
+- **Page bg:** `bg-[#F0F4FF]` — light cool blue-white (NOT dark, NOT gray)
+- **Card bg:** `bg-white` — pure white
+- **Primary accent:** `bg-[#2ECC88]` mint/emerald green — CTAs, recovered amounts, success
+- **Secondary accent:** `bg-[#4361EE]` electric blue — active nav, links, charts series 2
+- **Text primary:** `text-gray-900` (`#111827`) — KPIs, headings
+- **Text secondary:** `text-gray-600` (`#4B5563`)
+- **Text muted:** `text-gray-400` (`#9CA3AF`)
+- **Success label:** `text-emerald-600 bg-emerald-50`
+- **Danger label:** `text-red-500 bg-red-50`
+- **Warning label:** `text-amber-600 bg-amber-50`
+- **Border:** `border-gray-200` — clean, visible, not heavy
+
+### Dashboard Radius
+- All cards: `rounded-2xl` (16px) — non-negotiable
+- Large / pastel feature cards: `rounded-[20px]`
+- Buttons & inputs: `rounded-xl`
+- Tags / pills / badges: `rounded-full`
+
+### Dashboard Shadow
+- Cards: `shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]`
+- Elevated (modal/dropdown): `shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.06)]`
+- NO glow, NO coloured shadows, NO neon
+
+### Dashboard Layout
+- **Top nav only** (h-16, bg-white, border-b border-gray-100) — NO sidebar
+- Content area: `bg-[#F0F4FF] p-8`
+- KPI grid: `grid grid-cols-4 gap-6`
+- Charts/table row: `grid grid-cols-3 gap-6`
+
+### Dashboard Rules
+1. NEVER use dark backgrounds (`#0F1117`, `#1C1F2E`, etc.) — that spec is replaced
+2. NEVER use Lora in the dashboard — Inter only
+3. Mint `#2ECC88` is the primary action/success color (NOT blue)
+4. Blue `#4361EE` is for data/nav/links (NOT as primary button color)
+5. All cards are white on `#F0F4FF` background
+6. KPI numbers are `font-extrabold` (weight 800), never less
+7. Use pastel card backgrounds (mint, lavender, sky, yellow) for feature tiles — not plain white
+8. Empty states use illustration style: black outlines + mint fill, cream bg `#F5F0E8`

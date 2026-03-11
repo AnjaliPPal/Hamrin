@@ -19,6 +19,10 @@
     {
       "path": "/api/cron/gdpr-purge",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/reactivation/send",
+      "schedule": "30 3 * * *"
     }
   ]
 }

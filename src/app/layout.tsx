@@ -16,9 +16,23 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Hamrin — Payment recovery for solo founders | $0 + 10% of recovered",
+  title: "Hamrin.ai — Stripe Retention OS | Cancel Flows, Payment Recovery & Reactivation",
   description:
-    "Stop losing revenue to failed payments. Connect Stripe once. We recover expired cards and declines automatically. Visa/MC compliant. Pay only when we recover.",
+    "Turn your cancel button into a retention engine. Recover failed payments, run win-back campaigns, and show a payment wall — all for Stripe. Pay $0 upfront + 10% of recovered revenue, or $99/mo flat.",
+  keywords: [
+    "Stripe retention",
+    "payment recovery",
+    "cancel flow",
+    "reactivation campaigns",
+    "failed payment recovery",
+    "subscription retention",
+    "churn reduction",
+  ],
+  openGraph: {
+    title: "Hamrin.ai — Stripe Retention OS",
+    description: "Cancel flows, payment recovery, reactivation campaigns. Pay only when we recover.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

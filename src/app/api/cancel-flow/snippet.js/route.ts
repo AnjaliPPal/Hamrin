@@ -7,11 +7,11 @@ export const runtime = "edge";
  * GET /api/cancel-flow/snippet.js?installation_id=X
  *
  * Returns a self-contained JS widget that merchants embed with a single script tag:
- *   <script src="https://app.lamrin.ai/api/cancel-flow/snippet.js?installation_id=YOUR_ID"></script>
+ *   <script src="https://app.hamrin.ai/api/cancel-flow/snippet.js?installation_id=YOUR_ID"></script>
  *
  * Usage in merchant's app:
- *   Add data-lamrin-cancel to the cancel button element:
- *   <button data-lamrin-cancel
+ *   Add data-hamrin-cancel to the cancel button element:
+ *   <button data-hamrin-cancel
  *           data-customer-id="cus_xxx"
  *           data-subscription-id="sub_xxx">Cancel subscription</button>
  *
@@ -257,8 +257,8 @@ export async function GET(request: NextRequest) {
 
   // ── Main intercept logic ───────────────────────────────────────────────
   function interceptButton(btn) {
-    if (btn.dataset.lamrinBound) return;
-    btn.dataset.lamrinBound = '1';
+    if (btn.dataset.hamrinBound) return;
+    btn.dataset.hamrinBound = '1';
 
     btn.addEventListener('click', function(e) {
       e.preventDefault();
@@ -268,7 +268,7 @@ export async function GET(request: NextRequest) {
       var subscriptionId = btn.dataset.subscriptionId || btn.getAttribute('data-subscription-id');
 
       if (!customerId || !subscriptionId) {
-        console.warn('[lamrin] Missing data-customer-id or data-subscription-id on button');
+        console.warn('[hamrin] Missing data-customer-id or data-subscription-id on button');
         return;
       }
 
@@ -297,7 +297,7 @@ export async function GET(request: NextRequest) {
           showStep1(cfg, originalAction);
         });
       }).catch(function(err) {
-        console.error('[lamrin] Failed to create session', err);
+        console.error('[hamrin] Failed to create session', err);
         // On error, don't block the user — allow original action
         if (typeof originalAction === 'function') originalAction();
       });
@@ -305,7 +305,7 @@ export async function GET(request: NextRequest) {
   }
 
   function bindAll() {
-    var btns = document.querySelectorAll('[data-lamrin-cancel]');
+    var btns = document.querySelectorAll('[data-hamrin-cancel]');
     btns.forEach(interceptButton);
   }
 

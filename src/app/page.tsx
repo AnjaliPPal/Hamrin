@@ -1,488 +1,393 @@
 import Link from "next/link";
 import { PricingSection } from "@/components/pricing-section";
+import { HamrinFeatureStepsDemo } from "@/components/blocks/feature-section";
 
-const CHECK_ICON = (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0">
-    <circle cx="10" cy="10" r="10" fill="#22c55e" />
-    <path d="M6 10.5l2.5 2.5 5.5-5.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+const CHECK = (
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" className="shrink-0">
+    <circle cx="9" cy="9" r="9" fill="#2ECC88" />
+    <path d="M5 9.5l2.5 2.5 5.5-5.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+const FEATURES = [
+  {
+    tag: "Cancel Flows",
+    tagColor: "bg-violet-100 text-violet-700",
+    title: "Stop cancellations before they happen",
+    desc: "When a customer clicks cancel, Hamrin intercepts with a personalised offer — pause, discount, or feedback. Turn churns into saves in real time.",
+    visual: (
+      <div className="flex flex-col gap-2 px-2">
+        <div className="bg-violet-100 rounded-lg p-3 text-[11px] font-semibold text-violet-700">Subscriber wants to cancel…</div>
+        <div className="bg-white border border-gray-100 rounded-lg p-3 text-[11px] text-gray-600">Hamrin shows: <strong className="text-gray-900">Pause for 1 month?</strong></div>
+        <div className="bg-[#2ECC88] rounded-lg p-3 text-[11px] font-bold text-white text-center">✓ Saved — subscription retained</div>
+      </div>
+    ),
+    bg: "bg-[#F3F0FF]",
+  },
+  {
+    tag: "Payment Recovery",
+    tagColor: "bg-emerald-100 text-emerald-700",
+    title: "Recover failed payments automatically",
+    desc: "Smart retry engine re-attempts declined cards at optimal times. Card updater catches expirations before they fail. Up to 72% recovery rate.",
+    visual: (
+      <div className="flex items-end gap-1.5 h-16 px-2">
+        {[35, 50, 40, 65, 55, 80, 70, 90].map((h, i) => (
+          <div key={i} className="flex-1 rounded-t" style={{ height: `${h}%`, background: i >= 5 ? '#2ECC88' : '#A7F3D0' }} />
+        ))}
+      </div>
+    ),
+    bg: "bg-[#ECFDF5]",
+  },
+  {
+    tag: "Reactivation",
+    tagColor: "bg-yellow-100 text-yellow-700",
+    title: "Win back churned customers automatically",
+    desc: "3-email win-back sequence fires 3, 7, and 14 days after churn. Each email has a personal offer. One click reactivates the subscription.",
+    visual: (
+      <div className="flex flex-col gap-2 px-2">
+        {[
+          { d: "Day 3", msg: "We miss you — come back?" },
+          { d: "Day 7", msg: "Here's 20% off to return" },
+          { d: "Day 14", msg: "Last chance — 30% off" },
+        ].map((e) => (
+          <div key={e.d} className="flex items-center gap-2 bg-white/80 rounded-lg px-3 py-2">
+            <span className="text-[10px] font-bold text-yellow-600 w-10">{e.d}</span>
+            <span className="text-[11px] text-gray-600">{e.msg}</span>
+          </div>
+        ))}
+      </div>
+    ),
+    bg: "bg-[#FEFCE8]",
+  },
+  {
+    tag: "Payment Wall",
+    tagColor: "bg-blue-100 text-blue-700",
+    title: "Block access until payment is updated",
+    desc: "Embed one script tag. If a customer has an open failed payment, Hamrin shows a recovery banner. Supports banner, modal, and full blocking modes.",
+    visual: (
+      <div className="bg-white/80 rounded-lg p-3 border border-gray-100">
+        <p className="text-[11px] font-semibold text-gray-800 mb-2">⚠ Your account access is limited</p>
+        <p className="text-[10px] text-gray-500 mb-2.5">Update your card to restore full access.</p>
+        <div className="bg-[#4361EE] rounded-lg px-3 py-1.5 text-[11px] font-bold text-white text-center">Update card →</div>
+      </div>
+    ),
+    bg: "bg-[#EFF6FF]",
+  },
+  {
+    tag: "Analytics",
+    tagColor: "bg-gray-100 text-gray-600",
+    title: "Every retention metric in one place",
+    desc: "Recovery by source, cancel flow save rate, reactivation win-back rate, Visa compliance, GDPR retention — all live, all in one dashboard.",
+    visual: (
+      <div className="grid grid-cols-2 gap-2 px-1">
+        {[
+          { label: "Save Rate", val: "48%", color: "text-violet-700" },
+          { label: "Recovery",  val: "72%", color: "text-emerald-700" },
+          { label: "Win-back",  val: "31%", color: "text-yellow-600" },
+          { label: "Visa",      val: "SAFE", color: "text-blue-600"   },
+        ].map((s) => (
+          <div key={s.label} className="bg-white/80 rounded-lg p-2.5 text-center">
+            <p className={`text-base font-extrabold ${s.color}`}>{s.val}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+    ),
+    bg: "bg-gray-50",
+  },
+];
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white font-[family-name:var(--font-inter)]">
+
       {/* ─── ANNOUNCEMENT BAR ─── */}
-      <div className="bg-[#1e40af] text-white text-center text-sm py-2.5 px-4 font-semibold tracking-wide">
-        New: Stripe Connect one-click setup is live →
+      <div className="bg-gray-900 text-white text-center text-sm py-2.5 px-4 font-medium">
+        <span className="text-[#2ECC88] font-bold">New:</span> Cancel Flow + Reactivation Campaigns now live →{" "}
+        <Link href="/onboard" className="underline underline-offset-2 hover:no-underline">Connect Stripe free</Link>
       </div>
 
       {/* ─── NAVIGATION ─── */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100">
+      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gray-100">
         <div className="max-w-[1200px] mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-1.5">
-            <span className="text-xl font-bold tracking-tight text-gray-900">
-              hamrin<span className="text-[#eab308]">.ai</span>
-            </span>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#2ECC88] flex items-center justify-center">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span className="text-[15px] font-extrabold text-gray-900 tracking-tight">hamrin<span className="text-[#2ECC88]">.ai</span></span>
           </Link>
-          <div className="flex items-center gap-8">
-            <a href="#features" className="text-[15px] text-gray-600 hover:text-gray-900 transition-colors hidden md:inline">
-              Features
-            </a>
-            <a href="#pricing" className="text-[15px] text-gray-600 hover:text-gray-900 transition-colors hidden md:inline">
-              Pricing
-            </a>
-            <Link href="/onboard" className="text-[15px] text-gray-600 hover:text-gray-900 transition-colors hidden md:inline">
-              Sign In
-            </Link>
-            <Link
-              href="/onboard"
-              className="bg-[#1e40af] hover:bg-[#1e3b96] text-white font-semibold text-sm px-5 py-2.5 rounded-lg transition-colors"
+
+          <div className="flex items-center gap-7">
+            <a href="#features" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors hidden md:inline">Features</a>
+            <a href="#compare" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors hidden md:inline">Compare</a>
+            <a href="#pricing" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors hidden md:inline">Pricing</a>
+            <Link href="/onboard" className="text-[14px] text-gray-500 hover:text-gray-900 transition-colors hidden md:inline">Sign In</Link>
+            <a
+              href={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/auth/stripe`}
+              className="bg-gray-900 hover:bg-gray-800 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors"
             >
-              Get a Demo
-            </Link>
+              Connect Stripe free →
+            </a>
           </div>
         </div>
       </nav>
 
       {/* ─── HERO ─── */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#fdf8ef] via-[#fefcf7] to-white pointer-events-none" />
-        <div className="relative max-w-[800px] mx-auto px-6 pt-20 sm:pt-28 pb-14 text-center">
-          <h1 className="font-[family-name:var(--font-lora)] text-[2.75rem] sm:text-[3.5rem] md:text-[4rem] font-bold text-gray-900 leading-[1.1] tracking-tight">
-            Stop failed payments.
-            <br />
-            Retain more subscribers.
-          </h1>
-          <p className="mt-6 text-lg text-gray-500 max-w-[600px] mx-auto leading-relaxed">
-            Hamrin is retention automation for self-serve subscription companies. Fix failed payments. Reduce cancellations. Increase ARR.
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a
-              href={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/auth/stripe`}
-              className="inline-flex items-center gap-2 bg-[#1e40af] hover:bg-[#1e3b96] text-white font-semibold px-7 py-3.5 rounded-lg text-[15px] transition-colors shadow-sm"
-            >
-              Improve Retention Now
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </a>
-            <a
-              href="https://cal.com/anjalipal/hamrin-demo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-white border border-gray-300 hover:border-gray-400 text-gray-700 font-semibold px-7 py-3.5 rounded-lg text-[15px] transition-colors"
-            >
-              Talk With Us
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </a>
+      <section className="bg-white pt-16 pb-12 sm:pt-20">
+        <div className="max-w-[1200px] mx-auto px-6 grid md:grid-cols-[1fr_1.05fr] gap-12 lg:gap-20 items-center">
+
+          {/* LEFT */}
+          <div>
+            {/* Identity badge */}
+            <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3.5 py-1.5 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2ECC88]" />
+              <span className="text-xs font-semibold text-gray-600 tracking-wide">Stripe Retention OS</span>
+            </div>
+
+            <h1 className="text-[3rem] sm:text-[3.75rem] lg:text-[4.25rem] font-black text-gray-900 leading-[1.04] tracking-tight">
+              The complete
+              <br />
+              retention stack
+              <br />
+              <span className="text-[#2ECC88]">for Stripe.</span>
+            </h1>
+            <p className="mt-5 text-[16px] text-gray-500 max-w-[420px] leading-relaxed">
+              Cancel flows, payment recovery, reactivation campaigns, and a payment wall — all in one. Connect once, retain forever.
+            </p>
+
+            <div className="mt-8 flex flex-col sm:flex-row items-start gap-3">
+              <a
+                href={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/auth/stripe`}
+                className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-bold px-7 py-3.5 rounded-xl text-[15px] transition-colors"
+              >
+                Connect Stripe free
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </a>
+              <a
+                href="https://cal.com/anjalipal/hamrin-demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-800 font-semibold px-3 py-3.5 text-[15px] transition-colors"
+              >
+                Book a 20-min demo →
+              </a>
+            </div>
+
+            {/* Social proof */}
+            <p className="mt-6 text-xs text-gray-400 flex items-center gap-2">
+              <span className="flex -space-x-1.5">
+                {["#2ECC88","#4361EE","#FBBF24","#F87171"].map((c) => (
+                  <span key={c} className="w-6 h-6 rounded-full border-2 border-white" style={{ background: c }} />
+                ))}
+              </span>
+              Trusted by 40+ subscription founders
+            </p>
+          </div>
+
+          {/* RIGHT — 5-feature grid */}
+          <div className="grid grid-cols-2 gap-3">
+            {FEATURES.slice(0, 4).map((f) => (
+              <div key={f.tag} className={`${f.bg} rounded-[20px] p-5 flex flex-col gap-3`}>
+                <span className={`inline-flex self-start text-[11px] font-semibold px-2.5 py-1 rounded-full ${f.tagColor}`}>{f.tag}</span>
+                <p className="text-[13px] font-bold text-gray-900 leading-snug">{f.title.split(" ").slice(0, 4).join(" ")}…</p>
+                <div className="mt-auto">{f.visual}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ─── BASELINE STATS STRIP ─── */}
-      <section className="py-10 border-t border-gray-100">
-        <div className="max-w-[700px] mx-auto px-6">
-          <p className="text-center text-xs font-semibold text-gray-400 tracking-[0.2em] uppercase mb-8">
-            A baseline Hamrin experience
+      <section className="py-10 border-t border-gray-100 bg-white">
+        <div className="max-w-[800px] mx-auto px-6">
+          <p className="text-center text-[11px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-8">
+            A baseline hamrin experience
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-            {[
-              "32% Involuntary Churn Drop",
-              "14% Avg. LTV Increase",
-              "72% Recovered Payments",
-            ].map((stat) => (
-              <div key={stat} className="flex items-center gap-2.5 text-[15px] text-gray-700 font-medium">
-                {CHECK_ICON}
-                {stat}
+            {["32% Involuntary Churn Drop", "14% Avg. LTV Increase", "72% Recovered Payments", "3× faster than Churnkey"].map((stat) => (
+              <div key={stat} className="flex items-center gap-2.5 text-[14px] text-gray-700 font-medium">
+                {CHECK}{stat}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── FEATURE CARDS (Churnkey-style pill badges) ─── */}
-      <section id="features" className="py-16 sm:py-20 bg-white">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { label: "Smart Retries", desc: "Recover up to 72% of failed payments", color: "bg-red-50 text-red-600", dot: "bg-red-500" },
-              { label: "Pre-Dunning", desc: "Warn customers before cards expire", color: "bg-orange-50 text-orange-600", dot: "bg-orange-500" },
-              { label: "Recovery Emails", desc: "Reach customers via email & SMS", color: "bg-green-50 text-green-600", dot: "bg-green-500" },
-              { label: "Churn Scores", desc: "AI-powered risk prediction 0–100", color: "bg-blue-50 text-blue-600", dot: "bg-blue-500" },
-              { label: "Card Updater", desc: "Auto-detect new card details", color: "bg-purple-50 text-purple-600", dot: "bg-purple-500" },
-              { label: "Compliance", desc: "Visa/MC & GDPR compliant", color: "bg-pink-50 text-pink-600", dot: "bg-pink-500" },
-            ].map((f) => (
-              <div key={f.label} className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                <div className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${f.color} mb-3`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${f.dot}`} />
-                  {f.label}
-                </div>
-                <p className="text-sm text-gray-500 leading-snug">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ─── FEATURE STEPS (animated) ─── */}
+      <div id="features">
+        <HamrinFeatureStepsDemo />
+      </div>
 
-      {/* ─── TRUSTED BY ─── */}
-      <section className="py-12 border-t border-gray-100">
-        <div className="max-w-[1000px] mx-auto px-6">
-          <p className="text-center text-xs font-semibold text-gray-400 tracking-[0.2em] uppercase mb-10">
-            Trusted by these customer-obsessed teams......
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 opacity-60 grayscale">
-            {["Stripe", "Vercel", "Prisma", "Neon", "Resend", "Upstash", "Brevo", "Twilio"].map((name) => (
-              <span key={name} className="text-lg sm:text-xl font-bold text-gray-800 tracking-tight">
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── PAYMENT RECOVERY DEEP DIVE (Churnkey product page style) ─── */}
+      {/* ─── 5 FEATURE DEEP DIVES ─── */}
       <section className="py-20 sm:py-24 bg-white">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-start">
-            {/* Left: Text */}
-            <div>
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-amber-600 mb-4">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l2.09 4.26L17 7.27l-3.5 3.41.83 4.82L10 13.27 5.67 15.5l.83-4.82L3 7.27l4.91-1.01L10 2z" fill="#eab308" /></svg>
-                Payment Recovery
+        <div className="max-w-[1100px] mx-auto px-6 space-y-24">
+          {FEATURES.map((f, i) => (
+            <div
+              key={f.tag}
+              className={`grid md:grid-cols-2 gap-12 md:gap-16 items-center ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}
+            >
+              {/* Text */}
+              <div>
+                <span className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full mb-5 ${f.tagColor}`}>{f.tag}</span>
+                <h2 className="text-[1.75rem] sm:text-[2.125rem] font-extrabold text-gray-900 leading-tight tracking-tight mb-4">
+                  {f.title}
+                </h2>
+                <p className="text-gray-500 leading-relaxed text-[15px]">{f.desc}</p>
+                <a
+                  href={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/auth/stripe`}
+                  className="mt-7 inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors"
+                >
+                  Connect Stripe free →
+                </a>
               </div>
-              <h2 className="font-[family-name:var(--font-lora)] text-[1.75rem] sm:text-[2.125rem] font-bold text-gray-900 leading-tight">
-                Solve your failed payment headaches with Payment Recovery.
-              </h2>
-              <p className="mt-4 text-gray-500 leading-relaxed">
-                Retain more customers, capture product feedback, and increase customer loyalty.
-              </p>
 
-              <div className="mt-10 space-y-8">
-                {[
-                  {
-                    icon: "🎯",
-                    title: "Precision Retries",
-                    desc: "Recover failed payments without customer intervention. Our custom, proven retry system adapts to the bespoke needs of your business.",
-                  },
-                  {
-                    icon: "📱",
-                    title: "Omnichannel campaigns",
-                    desc: "When hard declines happen, reach your customers where they are: SMS, email, or in your app.",
-                  },
-                  {
-                    icon: "🔒",
-                    title: "Payment Wall",
-                    desc: "Block key features in your app or product until your customer updates their payment method.",
-                  },
-                ].map((item) => (
-                  <div key={item.title} className="flex gap-4">
-                    <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                      <p className="mt-1 text-sm text-gray-500 leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
+              {/* Visual card */}
+              <div className={`${f.bg} rounded-[24px] p-8 flex items-center justify-center min-h-[220px]`}>
+                <div className="w-full max-w-[280px]">{f.visual}</div>
               </div>
             </div>
-
-            {/* Right: Mock Dashboard Cards */}
-            <div className="space-y-4">
-              {/* Stats Card */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                </div>
-                <div className="mt-4 space-y-6">
-                  <div>
-                    <p className="text-sm text-gray-500 font-medium">Payments Recovered</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-0.5">$201,038</p>
-                    <p className="text-sm text-green-600 font-medium mt-0.5">+$3,768 last 7 days</p>
-                  </div>
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="text-sm text-gray-500 font-medium">Subscriptions Recovered</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-0.5">38,297</p>
-                    <p className="text-sm text-green-600 font-medium mt-0.5">89% recovery rate</p>
-                  </div>
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="text-sm text-gray-500 font-medium mb-3">Recovered Revenue</p>
-                    <div className="flex items-end gap-1 h-20">
-                      {[40, 55, 35, 60, 45, 70, 50, 65, 80, 55, 75, 90].map((h, i) => (
-                        <div key={i} className="flex-1 bg-blue-500 rounded-t" style={{ height: `${h}%` }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card Update Widget */}
-              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg">
-                <p className="text-sm font-semibold text-gray-900 mb-1">Hey, subscriber. Your account access is limited right now.</p>
-                <p className="text-xs text-gray-500 mb-4">
-                  We&apos;ve tried a number of times to charge your card on file, but it hasn&apos;t worked out.
-                </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                  <p className="text-xs font-semibold text-blue-700 flex items-center gap-1.5">
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L1 13h12L7 1z" fill="#3b82f6"/></svg>
-                    Update your card to restore access.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-gray-700">Card Information</p>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-400">
-                    1234 1234 1234 1234
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-400">Month</div>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-400">Year</div>
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-400">CVC</div>
-                  </div>
-                  <button className="w-full bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-semibold text-sm py-3 rounded-lg transition-colors mt-2">
-                    Update Card
-                  </button>
-                  <p className="text-center text-xs text-gray-400 mt-1">⚙ Contact Support</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ─── TESTIMONIAL (Churnkey-style: serif quote, yellow underlines) ─── */}
-      <section className="py-20 sm:py-24 bg-gray-50">
+      {/* ─── TESTIMONIAL ─── */}
+      <section className="py-20 sm:py-24 bg-[#F0F4FF]">
         <div className="max-w-[750px] mx-auto px-6 text-center">
-          <blockquote className="font-[family-name:var(--font-lora)] text-xl sm:text-2xl font-medium text-gray-900 leading-relaxed">
-            &ldquo;I have been <span className="underline decoration-[#eab308] decoration-2 underline-offset-4">astounded by the customer service</span> Hamrin has provided us... the team has built and <span className="underline decoration-[#eab308] decoration-2 underline-offset-4">delivered on every promise</span> made and this will be <span className="underline decoration-[#eab308] decoration-2 underline-offset-4">a complete game changer</span> for our business. 10/10 recommend.&rdquo;
+          <blockquote className="text-xl sm:text-2xl font-bold text-gray-900 leading-relaxed">
+            &ldquo;I have been <span className="underline decoration-[#2ECC88] decoration-2 underline-offset-4">astounded by the customer service</span> Hamrin has provided us… the team has{" "}
+            <span className="underline decoration-[#2ECC88] decoration-2 underline-offset-4">delivered on every promise</span> and this will be{" "}
+            <span className="underline decoration-[#2ECC88] decoration-2 underline-offset-4">a complete game changer</span> for our business. 10/10.&rdquo;
           </blockquote>
           <div className="mt-8 flex items-center justify-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold text-white">
-              CB
-            </div>
+            <div className="w-10 h-10 rounded-full bg-[#2ECC88] flex items-center justify-center text-sm font-bold text-white">CB</div>
             <div className="text-left">
               <p className="text-sm font-semibold text-gray-900">Charley Burtwistle</p>
-              <p className="text-sm text-gray-500">Senior Director of Core Subscription, Buildertrend</p>
+              <p className="text-sm text-gray-500">Senior Director, Buildertrend</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── MRR GROWTH SECTION (Churnkey-style bar chart visual) ─── */}
-      <section className="py-20 sm:py-24 bg-[#e8f4fd]">
-        <div className="max-w-[800px] mx-auto px-6 text-center">
-          <h2 className="font-[family-name:var(--font-lora)] text-2xl sm:text-[2.125rem] font-bold text-gray-900 leading-tight">
-            When teams want to drive more
-            <br />
-            revenue while understanding their
-            <br />
-            customers better, they use Hamrin.
-          </h2>
-
-          <div className="mt-16 relative">
-            <p className="text-[#eab308] font-bold text-lg mb-4">Your MRR on Hamrin</p>
-            <div className="flex items-end justify-center gap-2 h-48">
-              {[20, 25, 30, 28, 35, 40, 38, 50, 55, 65, 70, 80, 85, 90, 95].map((h, i) => (
-                <div
-                  key={i}
-                  className="w-8 sm:w-10 bg-[#3b82f6] rounded-t transition-all"
-                  style={{ height: `${h}%` }}
-                />
-              ))}
-            </div>
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <span className="text-xl font-bold text-gray-900">Add</span>
-              <span className="inline-flex items-center gap-1 text-xl font-bold text-gray-900">
-                <span className="w-7 h-7 bg-[#eab308] rounded-full inline-flex items-center justify-center text-white text-xs">✦</span>
-                Hamrin
-              </span>
-            </div>
+      {/* ─── COMPETITIVE COMPARISON ─── */}
+      <section id="compare" className="py-20 sm:py-24 bg-white">
+        <div className="max-w-[900px] mx-auto px-6">
+          <div className="text-center mb-12">
+            <p className="text-[11px] font-semibold text-gray-400 tracking-[0.2em] uppercase mb-3">Why not Churnkey?</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              Same outcomes. A fraction of the cost.
+            </h2>
+            <p className="mt-3 text-gray-500 text-[15px]">Churnkey charges $300–$990/mo before you recover a single dollar. Lamrin starts at $0.</p>
           </div>
-        </div>
-      </section>
 
-      {/* ─── CHURN METRICS SECTION ─── */}
-      <section className="py-20 sm:py-24 bg-white">
-        <div className="max-w-[1100px] mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-start">
-            <div>
-              <div className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 mb-4">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="6" width="4" height="12" rx="1" fill="#3b82f6"/><rect x="8" y="3" width="4" height="15" rx="1" fill="#3b82f6" opacity="0.7"/><rect x="14" y="8" width="4" height="10" rx="1" fill="#3b82f6" opacity="0.4"/></svg>
-                Churn Metrics
-              </div>
-              <h2 className="font-[family-name:var(--font-lora)] text-[1.75rem] sm:text-[2.125rem] font-bold text-gray-900 leading-tight">
-                Find out what churn is really costing you with Churn Metrics.
-              </h2>
-              <p className="mt-4 text-gray-500 leading-relaxed">
-                Track churn volume, identify trends across customer cohorts, and strategize to lower churn.
-              </p>
-
-              <div className="mt-10 space-y-8">
+          <div className="overflow-hidden rounded-2xl border border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-[0.06em]">Feature</th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-400 uppercase tracking-[0.06em]">Churnkey</th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-[#2ECC88] uppercase tracking-[0.06em]">hamrin</th>
+                </tr>
+              </thead>
+              <tbody>
                 {[
-                  { icon: "👁", title: "No strings attached", desc: "Connecting your payment provider will give us read-only snapshot of your churn data to analyze." },
-                  { icon: "📊", title: "The metrics that matter", desc: "No-BS metrics that help you understand your churn problem and where to focus your efforts." },
-                  { icon: "🔄", title: "Always fresh", desc: "Updated daily, so you can be sure you're always looking at the latest data." },
-                ].map((item) => (
-                  <div key={item.title} className="flex gap-4">
-                    <div className="shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-lg">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                      <p className="mt-1 text-sm text-gray-500 leading-relaxed">{item.desc}</p>
-                    </div>
-                  </div>
+                  { feature: "Starting price",     churnkey: "$300/mo",      hamrin: "$0 (Outcome)",       hamrinGood: true },
+                  { feature: "Cancel flows",        churnkey: "✓",            hamrin: "✓",                  hamrinGood: true },
+                  { feature: "Payment recovery",    churnkey: "✓",            hamrin: "✓",                  hamrinGood: true },
+                  { feature: "Reactivation emails", churnkey: "✓",            hamrin: "✓",                  hamrinGood: true },
+                  { feature: "Payment wall",        churnkey: "✓",            hamrin: "✓",                  hamrinGood: true },
+                  { feature: "GDPR / PSD3 ready",  churnkey: "Partial",      hamrin: "✓ Built-in",         hamrinGood: true },
+                  { feature: "Visa compliance",     churnkey: "Manual",       hamrin: "✓ Auto-tracked",     hamrinGood: true },
+                  { feature: "Lifetime deal",       churnkey: "✗",            hamrin: "$749 one-time",      hamrinGood: true },
+                  { feature: "Flat rate option",    churnkey: "From $300/mo", hamrin: "$99/mo",             hamrinGood: true },
+                ].map((row, i) => (
+                  <tr key={row.feature} className={`border-b border-gray-50 ${i % 2 === 0 ? "" : "bg-gray-50/40"}`}>
+                    <td className="px-6 py-3.5 text-sm font-medium text-gray-700">{row.feature}</td>
+                    <td className="px-6 py-3.5 text-sm text-center text-gray-400">{row.churnkey}</td>
+                    <td className={`px-6 py-3.5 text-sm text-center font-semibold ${row.hamrinGood ? "text-emerald-700" : "text-gray-500"}`}>{row.hamrin}</td>
+                  </tr>
                 ))}
-              </div>
-
-              <a
-                href="/onboard"
-                className="mt-8 inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-colors"
-              >
-                Explore Churn Metrics
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              </a>
-            </div>
-
-            {/* Right: Metrics Dashboard Mock */}
-            <div className="space-y-4">
-              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-lg">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                </div>
-
-                <div className="space-y-5">
-                  <div>
-                    <p className="text-sm text-gray-500 font-medium">Revenue Churn Rate</p>
-                    <p className="text-3xl font-bold text-blue-600 mt-0.5">7%</p>
-                    <div className="flex items-end gap-1 h-10 mt-2">
-                      {[60, 70, 55, 80, 65, 75, 50].map((h, i) => (
-                        <div key={i} className="flex-1 bg-blue-500 rounded-t" style={{ height: `${h}%` }} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="text-sm text-gray-500 font-medium">Revenue Churned</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-0.5">$2.86k</p>
-                    <div className="flex items-end gap-1 h-10 mt-2">
-                      {[50, 65, 45, 70, 60, 55, 75].map((h, i) => (
-                        <div key={i} className="flex-1 bg-blue-500 rounded-t" style={{ height: `${h}%` }} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="text-sm text-gray-500 font-medium">Subscriptions Churned</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-0.5">138</p>
-                    <div className="flex items-end gap-1 h-10 mt-2">
-                      {[40, 55, 65, 50, 70, 60, 45].map((h, i) => (
-                        <div key={i} className="flex-1 bg-blue-500 rounded-t" style={{ height: `${h}%` }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Retention Heatmap */}
-              <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-lg">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="w-5 h-5 rounded-full bg-amber-400 flex items-center justify-center text-[10px] text-white font-bold">!</span>
-                  <p className="text-xs font-medium text-gray-700">Spot trends with retained subscriptions.</p>
-                </div>
-                <div className="space-y-1.5">
-                  {[
-                    { month: "JAN", vals: [99, 95] },
-                    { month: "FEB", vals: [98, 96] },
-                    { month: "MAR", vals: [99, 95] },
-                    { month: "APR", vals: [100, 99] },
-                    { month: "MAY", vals: [98, 93] },
-                  ].map((row) => (
-                    <div key={row.month} className="flex items-center gap-2">
-                      <span className="text-[11px] font-medium text-gray-500 w-8">{row.month}</span>
-                      <div className="flex gap-1.5">
-                        {row.vals.map((v, i) => (
-                          <span
-                            key={i}
-                            className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                              v >= 99 ? "bg-green-100 text-green-700" :
-                              v >= 95 ? "bg-green-50 text-green-600" :
-                              "bg-yellow-50 text-yellow-700"
-                            }`}
-                          >
-                            {v}%
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+              </tbody>
+            </table>
           </div>
+
+          <p className="text-center text-xs text-gray-400 mt-5">
+            Churnkey pricing sourced from their public pricing page, March 2026. Subject to change.
+          </p>
         </div>
       </section>
 
-      {/* ─── PRICING (ListenUp-style 3-column) ─── */}
+      {/* ─── PRICING ─── */}
       <PricingSection />
 
-      {/* ─── CTA: Book a Call ─── */}
-      <section className="py-20 sm:py-24 bg-white">
+      {/* ─── CTA ─── */}
+      <section className="py-20 sm:py-24 bg-gray-900">
         <div className="max-w-[600px] mx-auto px-6 text-center">
-          <h2 className="font-[family-name:var(--font-lora)] text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-            Want to see if this fits your business?
+          <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2ECC88]" />
+            <span className="text-xs font-semibold text-gray-300 tracking-wide">Stripe Retention OS</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-4 tracking-tight">
+            Start recovering revenue today.
           </h2>
-          <p className="text-gray-500 mb-8 leading-relaxed">
-            I&apos;m Anjali — founder and CTO. Book a 20-min call and I&apos;ll show you what&apos;s leaking from your Stripe dashboard.
+          <p className="text-gray-400 mb-8 leading-relaxed text-[15px]">
+            I&apos;m Anjali — founder. Book a 20-min call and I&apos;ll audit your Stripe for free and show you exactly what&apos;s leaking.
           </p>
-          <a
-            href="https://cal.com/anjalipal/hamrin-demo"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-[#1e40af] hover:bg-[#1e3b96] text-white font-semibold px-8 py-4 rounded-lg text-base transition-colors shadow-sm"
-          >
-            Schedule a free call →
-          </a>
-          <p className="mt-4 text-xs text-gray-400">No commitment · I&apos;ll audit your Stripe for free</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a
+              href={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/api/auth/stripe`}
+              className="inline-flex items-center gap-2 bg-[#2ECC88] hover:bg-[#25b578] text-gray-900 font-bold px-7 py-3.5 rounded-xl text-[15px] transition-colors"
+            >
+              Connect Stripe free →
+            </a>
+            <a
+              href="https://cal.com/anjalipal/hamrin-demo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-gray-400 hover:text-white font-semibold px-3 py-3.5 text-[15px] transition-colors"
+            >
+              Book a free audit →
+            </a>
+          </div>
+          <p className="mt-4 text-xs text-gray-500">No credit card needed. Connects in 60 seconds.</p>
         </div>
       </section>
 
       {/* ─── COMPLIANCE STRIP ─── */}
-      <section className="py-6 border-t border-gray-100">
+      <section className="py-5 border-t border-gray-100 bg-white">
         <div className="max-w-[900px] mx-auto px-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm text-gray-500">
-          {[
-            "Visa safe (card-fingerprint limits)",
-            "Mastercard compliant",
-            "GDPR ready (18-month EU retention)",
-            "PSD3 / PSR 2026",
-          ].map((item) => (
-            <span key={item} className="flex items-center gap-2">
-              {CHECK_ICON}
-              {item}
-            </span>
+          {["Visa safe (card-fingerprint limits)", "Mastercard compliant", "GDPR ready (18-month EU retention)", "PSD3 / PSR 2026"].map((item) => (
+            <span key={item} className="flex items-center gap-2">{CHECK}{item}</span>
           ))}
         </div>
       </section>
 
       {/* ─── FOOTER ─── */}
-      <footer className="border-t border-gray-200 bg-white px-6 py-10">
+      <footer className="border-t border-gray-100 bg-white px-6 py-10">
         <div className="max-w-[1200px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div>
-            <span className="text-xl font-bold text-gray-900">
-              hamrin<span className="text-[#eab308]">.ai</span>
-            </span>
-            <p className="text-xs text-gray-400 mt-1">Payment recovery for solo founders.</p>
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-[#2ECC88] flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-[15px] font-extrabold text-gray-900 tracking-tight">hamrin<span className="text-[#2ECC88]">.ai</span></span>
+              <p className="text-xs text-gray-400 mt-0.5">Stripe Retention OS · Built by Anjali Pal · 2026</p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center justify-center sm:justify-end gap-6 text-sm text-gray-500">
+            <a href="#features" className="hover:text-gray-900 transition-colors">Features</a>
+            <a href="#compare" className="hover:text-gray-900 transition-colors">Compare</a>
+            <a href="#pricing" className="hover:text-gray-900 transition-colors">Pricing</a>
             <Link href="/onboard" className="hover:text-gray-900 transition-colors">Get started</Link>
-            <Link href="/api/status" className="hover:text-gray-900 transition-colors">System status</Link>
+            <Link href="/api/status" className="hover:text-gray-900 transition-colors">Status</Link>
             <a href="https://cal.com/anjalipal/hamrin-demo" target="_blank" rel="noopener noreferrer" className="hover:text-gray-900 transition-colors">Book a call</a>
-            <span>Built by Anjali Pal · 2026</span>
           </div>
         </div>
       </footer>
+
     </div>
   );
 }

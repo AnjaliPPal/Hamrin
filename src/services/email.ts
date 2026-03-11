@@ -397,3 +397,109 @@ export async function sendDiscountEmail(
     };
   }
 }
+
+/**
+ * Module 6: Reactivation email — win back a churned customer
+ */
+export async function sendReactivationEmail(
+  email: string,
+  data: {
+    customerName?: string;
+    subject: string;
+    body: string;
+    offerType: "percent_off" | "none";
+    offerValue?: number;
+    reactivationLink: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const offerBlock =
+      data.offerType === "percent_off" && data.offerValue
+        ? `<div style="background:#f0fdf4;padding:16px;border-left:4px solid #2ECC88;margin:20px 0;border-radius:0 8px 8px 0;">
+             <p style="margin:0;color:#166534;font-weight:600;">🎁 Special offer: ${data.offerValue}% off your first month back</p>
+           </div>`
+        : "";
+
+    const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#111827;max-width:600px;margin:0 auto;padding:20px;">
+  <div style="padding:32px 0 16px;">
+    <p style="font-size:22px;font-weight:800;margin:0 0 4px;">hamrin<span style="color:#EAB308;">.ai</span></p>
+  </div>
+  <div style="padding:32px;background:#fff;border:1px solid #e5e7eb;border-radius:16px;">
+    <p>Hi ${data.customerName ?? "there"},</p>
+    <p style="white-space:pre-line;">${data.body}</p>
+    ${offerBlock}
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${data.reactivationLink}"
+         style="display:inline-block;background:#111827;color:#fff;padding:14px 32px;text-decoration:none;border-radius:10px;font-weight:700;font-size:15px;">
+        Reactivate my subscription →
+      </a>
+    </div>
+    <p style="color:#6b7280;font-size:13px;">Questions? Just reply to this email.</p>
+  </div>
+  <p style="color:#9ca3af;font-size:12px;margin-top:20px;text-align:center;">
+    You're receiving this because you previously subscribed. 
+    <a href="${data.reactivationLink}?unsubscribe=1" style="color:#9ca3af;">Unsubscribe</a>
+  </p>
+</body>
+</html>`;
+
+    const result = await sendEmail({ from: getFromEmail(), to: email, subject: data.subject, html });
+    if (!result.success) return { success: false, error: result.error };
+
+    console.log("✅ Reactivation email sent to:", email);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Reactivation email error:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}
+
+/**
+ * Module 6: Reactivation success email — welcome the customer back
+ */
+export async function sendReactivationSuccessEmail(
+  email: string,
+  data: {
+    customerName?: string;
+    dashboardLink?: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const subject = "Welcome back! Your subscription is active 🎉";
+    const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#111827;max-width:600px;margin:0 auto;padding:20px;">
+  <div style="padding:32px 0 16px;">
+    <p style="font-size:22px;font-weight:800;margin:0 0 4px;">hamrin<span style="color:#EAB308;">.ai</span></p>
+  </div>
+  <div style="padding:32px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:16px;">
+    <p style="font-size:24px;font-weight:800;margin:0 0 16px;">Welcome back, ${data.customerName ?? "there"}! 🎉</p>
+    <p>Your subscription is now active again. We're glad to have you back.</p>
+    <div style="background:#fff;padding:16px;border-radius:10px;margin:20px 0;border:1px solid #d1fae5;">
+      <p style="margin:0;color:#065f46;font-weight:600;">✅ Subscription reactivated successfully</p>
+    </div>
+    ${data.dashboardLink ? `<div style="text-align:center;margin:24px 0;">
+      <a href="${data.dashboardLink}"
+         style="display:inline-block;background:#111827;color:#fff;padding:12px 28px;text-decoration:none;border-radius:10px;font-weight:700;">
+        Go to your account →
+      </a>
+    </div>` : ""}
+    <p style="color:#6b7280;font-size:13px;">Questions? Just reply to this email.</p>
+  </div>
+</body>
+</html>`;
+
+    const result = await sendEmail({ from: getFromEmail(), to: email, subject, html });
+    if (!result.success) return { success: false, error: result.error };
+
+    console.log("✅ Reactivation success email sent to:", email);
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Reactivation success email error:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+  }
+}

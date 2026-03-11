@@ -332,21 +332,27 @@ From the Nixtio "Analytics Dashboard Web App" Dribbble shot:
 
 > **SCOPE:** Everything under `/dashboard/*` and all authenticated app pages.
 > **RULE:** When building ANY dashboard page, **IGNORE sections 2–9 completely.** Use ONLY this section.
-> **Reference:** Nixtio's "Analytics Dashboard Web App" — [Dribbble #25237206](https://dribbble.com/shots/25237206-Analytics-Dashboard-Web-App)
+> **References (all three must inform every dashboard decision):**
+> - Screenshot 1: Nixtio "Analytics Dashboard Web App" — light cool-white bg, white cards, electric blue + green charts
+> - Screenshot 2: Getillustrations — warm cream bg, black-outline illustrations with mint/emerald green `#2ECC88` fill
+> - Screenshot 3: Playground by Emote (Taras Migulko) — ultra-bold black sans-serif headlines, pastel card bgs, rounded-2xl cards, clean minimal layout
 
 ---
 
 ## 10.1 DASHBOARD VIBE — THE FEELING
 
-Think of it this way: the landing page is a magazine ad. The dashboard is mission control.
+The dashboard is NOT dark. It is **light, airy, and data-confident.**
 
-- **Deep dark backgrounds** — not gray-dark, but SPACE-dark. Navy-black. The #0F1117 background should feel like looking into deep water.
-- **Cards float** — each card is a slightly lighter surface (#1C1F2E) that floats above the background. The 1px border (#1E2235) is so subtle you almost can't see it, but it defines the edge. On hover, the card brightens ever so slightly (#232738).
-- **Blue-purple is the soul of the dashboard.** The accent (#636AFF) is used for: active nav items, primary buttons, selected tabs, chart highlights, focus rings, links. It's the ONE color that says "this is interactive."
-- **Charts GLOW.** Area charts have gradient fills that fade from 30% opacity to 0%. Lines have subtle drop-shadow glows. This creates depth and makes data feel alive.
-- **Numbers are the hero.** KPI numbers are 32px bold white — they're the biggest, heaviest thing on the page. Everything else serves them.
-- **Generous spacing everywhere.** Even though there's a lot of data, nothing feels cramped. Cards have 20-24px padding. Grid gaps are 20-24px. The sidebar has 16px padding on nav items.
-- **Subtle, not flashy.** No neon. No gradients on buttons. No animated backgrounds. The motion is gentle: 150ms hovers, 800ms chart draw-ins, soft fades. Premium, not playful.
+- **Light cool-white background.** Main bg is `#F0F4FF` — a very faint cool blue-white. Not stark white, not gray. Like a clear morning sky.
+- **White cards float on it.** Pure white cards (`#FFFFFF`) with very soft blue-tinted shadows. They feel clean and elevated, not heavy.
+- **Mint/emerald green is the soul.** `#2ECC88` (mint green) is the primary success/positive accent — chart bars, success states, recovered revenue amounts, CTAs. Electric, fresh, confident.
+- **Electric blue for data.** `#4361EE` for secondary charts, links, active states. Pairs with mint.
+- **Numbers are the hero.** KPI numbers are ultra-bold, black/near-black (`#111827`). Biggest, heaviest element on the page. They command attention.
+- **Pastel card accents.** Feature cards and category cards can use soft pastel backgrounds (mint `#ECFDF5`, lavender `#F3F0FF`, sky `#EFF6FF`, yellow `#FEFCE8`) to add color without noise.
+- **Ultra-bold headlines.** Page title is bold black Inter, tight letter-spacing. Punchy and direct.
+- **Rounded everything.** Cards use `rounded-2xl` (20px). Buttons use `rounded-xl` (12px). Tags/pills use `rounded-full`. The Playground reference sets this tone.
+- **Clean, uncluttered.** No dark overlays, no gradients on cards, no glow effects. White space is generous. Every card has ONE job.
+- **Illustrations.** When empty states or onboarding appear, use the Getillustrations style: black outlines + single mint/green fill. Never stock photography.
 
 ---
 
@@ -355,53 +361,63 @@ Think of it this way: the landing page is a magazine ad. The dashboard is missio
 ### Backgrounds
 | Token | Hex | Tailwind | Where |
 |-------|-----|----------|-------|
-| `--dash-bg-primary` | `#0F1117` | `bg-[#0F1117]` | Main page background. The deepest dark. |
-| `--dash-bg-secondary` | `#161922` | `bg-[#161922]` | Sidebar background. Slightly lighter than main. |
-| `--dash-bg-card` | `#1C1F2E` | `bg-[#1C1F2E]` | All card surfaces, widget panels, chart containers. |
-| `--dash-bg-card-hover` | `#232738` | `bg-[#232738]` | Card hover state. Table row hover. Subtle lift. |
-| `--dash-bg-input` | `#1A1D2B` | `bg-[#1A1D2B]` | Input fields, search bars, pill tab containers. |
-| `--dash-bg-elevated` | `#252A3A` | `bg-[#252A3A]` | Dropdowns, tooltips, modals, popovers. Above cards. |
+| `--dash-bg-primary` | `#F0F4FF` | `bg-[#F0F4FF]` | Main page background. Light cool blue-white. |
+| `--dash-bg-sidebar` | `#FFFFFF` | `bg-white` | Sidebar / top nav background. Pure white. |
+| `--dash-bg-card` | `#FFFFFF` | `bg-white` | All card surfaces, widget panels, chart containers. |
+| `--dash-bg-card-hover` | `#F8FAFF` | `bg-[#F8FAFF]` | Card hover state. Very faint blue tint. |
+| `--dash-bg-input` | `#F1F5F9` | `bg-slate-100` | Input fields, search bars, filter pill containers. |
+| `--dash-bg-elevated` | `#FFFFFF` | `bg-white` | Dropdowns, tooltips, modals. White with strong shadow. |
+
+### Pastel card accent backgrounds (for feature/category cards)
+| Name | Hex | Tailwind | Paired text |
+|------|-----|----------|-------------|
+| Mint | `#ECFDF5` | `bg-[#ECFDF5]` | `text-emerald-700` |
+| Lavender | `#F3F0FF` | `bg-[#F3F0FF]` | `text-violet-700` |
+| Sky | `#EFF6FF` | `bg-[#EFF6FF]` | `text-blue-700` |
+| Yellow | `#FEFCE8` | `bg-[#FEFCE8]` | `text-yellow-700` |
+| Peach | `#FFF7ED` | `bg-[#FFF7ED]` | `text-orange-700` |
 
 ### Accent
 | Token | Hex | Tailwind | Where |
 |-------|-----|----------|-------|
-| `--dash-accent` | `#636AFF` | `bg-[#636AFF]` | THE primary action color. Buttons, active nav, selected tabs, links, focus rings, chart highlights. |
-| `--dash-accent-hover` | `#818CF8` | `bg-[#818CF8]` | Hover state for accent elements. Slightly lighter/brighter. |
-| `--dash-accent-glow` | `rgba(99,106,255,0.15)` | — | Focus rings, active tab backgrounds, glow halos. |
+| `--dash-accent-green` | `#2ECC88` | `bg-[#2ECC88]` | **PRIMARY.** Recovered revenue, success states, primary CTAs, chart bar 1, positive trend pills. |
+| `--dash-accent-green-hover` | `#25B578` | `bg-[#25B578]` | Hover on green buttons/elements. |
+| `--dash-accent-blue` | `#4361EE` | `bg-[#4361EE]` | Active nav, links, chart bar 2, selected tabs, focus rings. |
+| `--dash-accent-blue-hover` | `#3451D1` | `bg-[#3451D1]` | Hover on blue elements. |
 
-### Chart Colors (use these in order for multi-series data)
+### Chart Colors (use in this order)
 | Token | Hex | When to use |
 |-------|-----|-------------|
-| `--chart-purple` | `#8B5CF6` | Primary data series. Recovery over time. Main line/area. |
-| `--chart-blue` | `#636AFF` | Secondary series. Matches accent. |
-| `--chart-cyan` | `#22D3EE` | Third series. Cool contrast. |
-| `--chart-green` | `#34D399` | Positive data. Success metrics. Growth. |
-| `--chart-orange` | `#FB923C` | Warning level. Mid-tier data. |
-| `--chart-pink` | `#F472B6` | Fifth series when needed. |
-| `--chart-yellow` | `#FACC15` | Callouts, highlights, annotations. |
+| `--chart-green` | `#2ECC88` | Bar 1 / primary. Recovered payments. Positive data. |
+| `--chart-blue` | `#4361EE` | Bar 2 / secondary. Failed attempts. Comparison data. |
+| `--chart-mint-light` | `#A7F3D0` | Area fill (30% opacity base). Chart gradient. |
+| `--chart-purple` | `#8B5CF6` | Third series when needed. |
+| `--chart-yellow` | `#FACC15` | Callouts, annotations, pending. |
+| `--chart-orange` | `#FB923C` | Warning level. |
 
 ### Status / Semantic
-| Token | Hex | Background variant | Where |
-|-------|-----|--------------------|-------|
-| `--dash-success` | `#34D399` | `rgba(52,211,153,0.1)` | Positive trends, recovered payments, upward arrows. |
-| `--dash-danger` | `#F87171` | `rgba(248,113,113,0.1)` | Failed recoveries, negative trends, errors, downward arrows. |
-| `--dash-warning` | `#FBBF24` | `rgba(251,191,36,0.1)` | Pending states, caution, retrying. |
-| `--dash-info` | `#60A5FA` | `rgba(96,165,250,0.1)` | Informational notes, tooltips. |
+| Token | Hex | Background | Where |
+|-------|-----|------------|-------|
+| `--dash-success` | `#2ECC88` | `#ECFDF5` | Recovered, positive, saved. |
+| `--dash-danger` | `#EF4444` | `#FEF2F2` | Failed, error, churn. |
+| `--dash-warning` | `#F59E0B` | `#FFFBEB` | Pending, caution, retrying. |
+| `--dash-info` | `#4361EE` | `#EFF6FF` | Informational, neutral note. |
 
 ### Text
 | Token | Hex | Tailwind | Where |
 |-------|-----|----------|-------|
-| `--dash-text-primary` | `#F1F5F9` | `text-[#F1F5F9]` | Headings, KPI numbers, important content. Off-white, not pure white. |
-| `--dash-text-secondary` | `#94A3B8` | `text-[#94A3B8]` | Body text, descriptions, table cells, axis labels. |
-| `--dash-text-muted` | `#64748B` | `text-[#64748B]` | Placeholders, disabled text, timestamps, tertiary info. |
-| `--dash-text-accent` | `#636AFF` | `text-[#636AFF]` | Clickable links, interactive text labels. |
+| `--dash-text-primary` | `#111827` | `text-gray-900` | KPI numbers, headings, important content. Near-black. Ultra-bold. |
+| `--dash-text-secondary` | `#4B5563` | `text-gray-600` | Body text, descriptions, table cells, axis labels. |
+| `--dash-text-muted` | `#9CA3AF` | `text-gray-400` | Placeholders, disabled text, timestamps, captions. |
+| `--dash-text-accent-green` | `#059669` | `text-emerald-600` | Positive labels, recovered amounts, upward arrows. |
+| `--dash-text-accent-blue` | `#4361EE` | `text-[#4361EE]` | Clickable links, interactive text. |
 
 ### Borders
-| Token | Hex | Where |
-|-------|-----|-------|
-| `--dash-border` | `#1E2235` | Card borders, row dividers, sidebar dividers. Barely visible. |
-| `--dash-border-subtle` | `#2A2F42` | Inner card separators, chart grid lines. Even subtler. |
-| `--dash-border-active` | `#636AFF` | Focused inputs, active card selection. |
+| Token | Hex | Tailwind | Where |
+|-------|-----|----------|-------|
+| `--dash-border` | `#E5E7EB` | `border-gray-200` | Card borders, table row dividers. Clean and visible but not heavy. |
+| `--dash-border-subtle` | `#F3F4F6` | `border-gray-100` | Inner card separators, chart grid lines. |
+| `--dash-border-active` | `#4361EE` | `border-[#4361EE]` | Focused inputs, selected cards. |
 
 ---
 
@@ -409,36 +425,37 @@ Think of it this way: the landing page is a magazine ad. The dashboard is missio
 
 ### Font
 - **ONE font for the entire dashboard:** `Inter`
-- **Monospace (for code/IDs):** `JetBrains Mono` or `Fira Code`
-- **NEVER use Lora or any serif in the dashboard.** The editorial vibe is landing-page only.
+- **Monospace (for IDs, fingerprints):** `font-mono` (system mono)
+- **NEVER use Lora or any serif in the dashboard.** Serif is landing-page only.
 
 ### Type Scale — Exact Values
-| What | Size | Weight | Line Height | Letter Spacing | Color |
-|------|------|--------|-------------|----------------|-------|
-| Page title ("Overview") | 28px | 700 | 1.2 | -0.02em | `--dash-text-primary` |
-| Section title ("Recovery Trends") | 20px | 600 | 1.3 | -0.01em | `--dash-text-primary` |
-| Card title ("Total Recovered") | 16px | 600 | 1.4 | -0.01em | `--dash-text-primary` |
-| Label / Subtitle | 13px | 500 | 1.4 | 0.01em | `--dash-text-secondary` |
-| Body text | 14px | 400 | 1.5 | 0 | `--dash-text-secondary` |
-| Small / Caption | 12px | 400 | 1.4 | 0.02em | `--dash-text-muted` |
-| **KPI big number** | **32px** | **700** | **1.1** | **-0.02em** | **`--dash-text-primary`** |
-| Trend percentage | 12px | 600 | 1.4 | 0 | `--dash-success` or `--dash-danger` |
-| Table header | 12px | 600 | 1.4 | 0.05em | `--dash-text-muted` (uppercase) |
-| Mono (IDs, code) | 13px | 400 | 1.5 | 0 | `--dash-text-secondary` |
+| What | Size | Weight | Tracking | Color |
+|------|------|--------|----------|-------|
+| Page title ("Recovery Dashboard") | 28px | **800** | -0.03em | `--dash-text-primary` |
+| Section title ("Total Recovered") | 20px | 700 | -0.02em | `--dash-text-primary` |
+| Card title | 15px | 600 | -0.01em | `--dash-text-primary` |
+| Label / subtitle | 13px | 500 | 0 | `--dash-text-secondary` |
+| Body text | 14px | 400 | 0 | `--dash-text-secondary` |
+| Caption / small | 12px | 400 | 0.01em | `--dash-text-muted` |
+| **KPI big number** | **36px** | **800** | **-0.03em** | **`--dash-text-primary`** |
+| Trend pill | 12px | 600 | 0 | `--dash-success` or `--dash-danger` |
+| Table header | 11px | 600 | 0.06em uppercase | `--dash-text-muted` |
+
+**Key rule:** KPI numbers use weight 800 (extrabold). They should feel heavy and punchy like the Playground headlines.
 
 ---
 
 ## 10.4 DASHBOARD SPACING
 
-4px base unit. Be generous.
+4px base unit. Be very generous — white space is the design.
 
 | Token | Value | Where |
 |-------|-------|-------|
-| `--space-1` | 4px | Icon-to-text gaps, tight padding |
+| `--space-1` | 4px | Icon gaps, tight inline padding |
 | `--space-2` | 8px | Badge padding, small gaps |
-| `--space-3` | 12px | Compact card sections, nav item gap |
-| `--space-4` | 16px | Default inner padding, sidebar item padding |
-| `--space-5` | 20px | Card padding (compact cards), grid gap |
+| `--space-3` | 12px | Compact sections, nav item gap |
+| `--space-4` | 16px | Default inner padding |
+| `--space-5` | 20px | Card padding (compact), grid gap |
 | `--space-6` | 24px | Card padding (standard), grid gap (standard) |
 | `--space-8` | 32px | Content area padding, section gaps |
 | `--space-10` | 40px | Page top padding |
@@ -448,29 +465,128 @@ Think of it this way: the landing page is a magazine ad. The dashboard is missio
 
 ## 10.5 DASHBOARD BORDER RADIUS
 
-| Token | Value | Where |
-|-------|-------|-------|
-| `--dash-radius-sm` | 6px | Badges, tags, chips, trend pills |
-| `--dash-radius-md` | 10px | Buttons, inputs, small cards, nav items |
-| `--dash-radius-lg` | 14px | **ALL main cards and panels.** This is the signature radius. |
-| `--dash-radius-xl` | 20px | Modals, large panels |
-| `--dash-radius-full` | 9999px | Avatars, status dots, pill tabs, circular buttons |
+| Token | Value | Tailwind | Where |
+|-------|-------|----------|-------|
+| `--dash-radius-sm` | 6px | `rounded` | Tags, chips, trend pills, badges |
+| `--dash-radius-md` | 10px | `rounded-lg` | Buttons, inputs, nav items |
+| `--dash-radius-lg` | 16px | `rounded-2xl` | **ALL main cards and panels.** Non-negotiable. |
+| `--dash-radius-xl` | 20px | `rounded-[20px]` | Large feature cards, modals, pastel category cards |
+| `--dash-radius-full` | 9999px | `rounded-full` | Avatars, status dots, pill tabs |
 
-**KEY RULE:** Every card in the dashboard uses `border-radius: 14px`. This is non-negotiable. It's what gives the Nixtio look.
+**KEY RULE:** Every card uses `rounded-2xl` (16px). Feature/pastel cards use `rounded-[20px]` (20px). This is what gives the Playground look.
 
 ---
 
-## 10.6 DASHBOARD SHADOWS & GLOW
+## 10.6 DASHBOARD SHADOWS
 
 ```css
-/* Card shadow — very subtle, mostly for depth perception */
---dash-shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+/* Standard card — clean white on light bg needs a real shadow */
+--dash-shadow-card: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
 
-/* Elevated surfaces (dropdowns, modals, popovers) */
---dash-shadow-elevated: 0 4px 20px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3);
+/* Elevated (dropdowns, modals, tooltips) */
+--dash-shadow-elevated: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
 
-/* Blue glow for active/focused elements */
---dash-shadow-glow: 0 0 20px rgba(99,106,255,0.25), 0 0 40px rgba(99,106,255,0.1);
+/* Card hover lift */
+--dash-shadow-hover: 0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+```
 
-/* Chart line glow */
---dash-shadow-chart-glow: 0 4px 16px rgba(139,92,246,0.3);
+**No glow effects.** No neon. No coloured drop-shadows. Shadows are always neutral black at very low opacity.
+
+---
+
+## 10.7 DASHBOARD COMPONENT PATTERNS
+
+### KPI Card
+```
+bg-white rounded-2xl p-6 shadow-[0_1px_4px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)]
+border border-gray-100
+
+  <p class="text-sm font-medium text-gray-400 tracking-wide uppercase">Total Recovered</p>
+  <p class="text-[36px] font-extrabold text-gray-900 tracking-tight mt-1">$12,480</p>
+  <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">↑ 18%</span>
+```
+
+### Pastel Feature Card (for onboarding steps, empty states, feature tiles)
+```
+bg-[#ECFDF5] rounded-[20px] p-6
+  — top-left: small rounded-full gray tag pill (e.g. "7–11 years" style from Playground ref)
+  — bold card title, 16px 700
+  — short 2-line body, 13px text-gray-500
+  — optional illustration area at bottom
+```
+
+### Tab Pills (filter tabs)
+```
+bg-gray-100 rounded-full p-1 flex gap-1
+  active: bg-white rounded-full shadow-sm text-gray-900 font-semibold
+  inactive: text-gray-500 font-medium hover:text-gray-700
+```
+
+### Primary Button
+```
+bg-[#2ECC88] hover:bg-[#25B578] text-white font-semibold rounded-xl px-5 py-2.5
+transition-colors duration-150
+```
+
+### Danger / Secondary Button
+```
+bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold rounded-xl px-5 py-2.5
+```
+
+### Input
+```
+bg-gray-50 border border-gray-200 focus:border-[#4361EE] focus:ring-2 focus:ring-[#4361EE]/10
+rounded-xl px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400
+```
+
+---
+
+## 10.8 ILLUSTRATION STYLE (empty states & onboarding)
+
+Pull from the Getillustrations style (Screenshot 2):
+- Black thick outlines, ~3px stroke
+- Single fill colour: `#2ECC88` mint/emerald
+- Warm off-white/cream background for illustration panels: `#F5F0E8`
+- Characters: round, friendly, slightly chunky — NOT corporate
+- Usage: empty state in tables, onboarding welcome screen, no-data cards
+- NEVER use stock photography in the dashboard
+
+---
+
+## 10.9 LAYOUT STRUCTURE
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Top Nav (bg-white, h-16, border-b border-gray-100)  │
+│  Logo left | Nav links center | User avatar right     │
+├──────────────────────────────────────────────────────┤
+│                                                       │
+│  Page Content (bg-[#F0F4FF] min-h-screen p-8)        │
+│                                                       │
+│   Page Title (text-3xl font-extrabold text-gray-900) │
+│   Subtitle (text-sm text-gray-400 mt-1)              │
+│                                                       │
+│   KPI Grid (grid-cols-4 gap-6 mt-8)                  │
+│   ┌────┐ ┌────┐ ┌────┐ ┌────┐                       │
+│   │    │ │    │ │    │ │    │  ← white rounded-2xl   │
+│   └────┘ └────┘ └────┘ └────┘                       │
+│                                                       │
+│   Charts + Tables row (grid-cols-3 gap-6 mt-6)       │
+│   ┌──────────────┐ ┌────────┐                        │
+│   │  Chart card  │ │ List   │  ← white rounded-2xl   │
+│   └──────────────┘ └────────┘                        │
+│                                                       │
+└──────────────────────────────────────────────────────┘
+```
+
+**No sidebar.** Top nav only. This matches the Nixtio reference (Screenshot 1).
+
+---
+
+## 10.10 MOTION
+
+- Hover transitions: `transition-all duration-150 ease-in-out`
+- Card hover: subtle shadow lift (`--dash-shadow-hover`) + `scale-[1.005]`
+- Chart draw-in: 600ms ease-out
+- Modal open: 200ms fade + translate-y-1 → translate-y-0
+- NO bounces, NO springs, NO looping animations in production UI

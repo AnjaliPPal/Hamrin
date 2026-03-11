@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         cancel_at_period_end: true,
         metadata: {
           cancel_reason: reason,
-          lamrin_session_id: sessionId,
+          hamrin_session_id: sessionId,
         },
       });
 

@@ -16,18 +16,27 @@ model Installation {
   vauEnabled      Boolean  @default(false) @map("vau_enabled")
   abuEnabled      Boolean  @default(false) @map("abu_enabled")
   smsEnabled      Boolean  @default(false) @map("sms_enabled")
+  // Module 6: new Installation fields
+  livemode              Boolean @default(true)
+  accountEmail          String? @map("account_email")
+  accountDisplayName    String? @map("account_display_name")
+  cancelFlowEnabled     Boolean @default(false) @map("cancel_flow_enabled")
+  reactivationEnabled   Boolean @default(false) @map("reactivation_enabled")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations (back references)
-  failedPayments    FailedPayment[]
-  eventsRaw         EventRaw[]
-  recoveredMonthly  RecoveredMonthly[]
-  usageTracking     UsageTracking[]
-  ltdInventory      LtdInventory?
-  metricsDaily      MetricsDaily[]
-  cancelFlowConfig  CancelFlowConfig?
-  cancelFlowSessions CancelFlowSession[]
+  failedPayments        FailedPayment[]
+  eventsRaw             EventRaw[]
+  recoveredMonthly      RecoveredMonthly[]
+  usageTracking         UsageTracking[]
+  ltdInventory          LtdInventory?
+  metricsDaily          MetricsDaily[]
+  cancelFlowConfig      CancelFlowConfig?
+  cancelFlowSessions    CancelFlowSession[]
+  pausedSubscriptions   PausedSubscription[]
+  churnedCustomers      ChurnedCustomer[]
+  reactivationCampaign  ReactivationCampaign?
 
   @@map("installations")
 }
@@ -208,5 +217,79 @@ model CancelFlowSession {
   @@index([stripeSubscriptionId])
   @@index([savedAt])
   @@map("cancel_flow_sessions")
+}
+
+// Module 4: Pause Subscription Flow
+
+model PausedSubscription {
+  id                  String    @id @default(cuid())
+  installationId       String    @map("installation_id")
+  stripeCustomerId    String    @map("stripe_customer_id")
+  stripeSubscriptionId String   @unique @map("stripe_subscription_id")
+  pausedAt             DateTime @map("paused_at")
+  resumeAt             DateTime @map("resume_at")
+  resumedAt            DateTime? @map("resumed_at")
+  // 'cancel_flow' when paused via cancel flow widget; 'manual' when paused in Stripe Dashboard / API
+  pauseSource          String   @map("pause_source")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@index([installationId])
+  @@index([stripeCustomerId])
+  @@map("paused_subscriptions")
+}
+
+// Module 6: Reactivation Campaigns
+
+model ChurnedCustomer {
+  id                  String    @id @default(cuid())
+  installationId      String    @map("installation_id")
+  stripeCustomerId    String    @map("stripe_customer_id")
+  customerEmail       String    @map("customer_email")
+  cancelledAt         DateTime  @map("cancelled_at")
+  // reason forwarded from CancelFlowSession if one exists
+  cancelReason        String?   @map("cancel_reason")
+  reactivatedAt       DateTime? @map("reactivated_at")
+  // 'reactivation_email' | 'direct' | 'other'
+  reactivationSource  String?   @map("reactivation_source")
+
+  installation        Installation        @relation(fields: [installationId], references: [id], onDelete: Cascade)
+  reactivationEmails  ReactivationEmail[]
+
+  @@index([installationId])
+  @@index([stripeCustomerId])
+  @@index([customerEmail])
+  @@map("churned_customers")
+}
+
+model ReactivationCampaign {
+  id             String   @id @default(cuid())
+  installationId String   @unique @map("installation_id")
+  enabled        Boolean  @default(false)
+  // JSON array: [{ dayOffset: number, subject: string, body: string, offerType: 'percent_off'|'none', offerValue: number }]
+  emails         Json     @default("[]")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  installation Installation @relation(fields: [installationId], references: [id], onDelete: Cascade)
+
+  @@map("reactivation_campaigns")
+}
+
+model ReactivationEmail {
+  id                  String    @id @default(cuid())
+  churnedCustomerId   String    @map("churned_customer_id")
+  // index into ReactivationCampaign.emails[] array
+  emailIndex          Int       @map("email_index")
+  sentAt              DateTime  @default(now()) @map("sent_at")
+  opened              Boolean   @default(false)
+  clicked             Boolean   @default(false)
+  reactivatedFromThis Boolean   @default(false) @map("reactivated_from_this")
+
+  churnedCustomer ChurnedCustomer @relation(fields: [churnedCustomerId], references: [id], onDelete: Cascade)
+
+  @@unique([churnedCustomerId, emailIndex])
+  @@index([churnedCustomerId])
+  @@map("reactivation_emails")
 }
 

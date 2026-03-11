@@ -1,7 +1,24 @@
-# Lamrin.ai — AI Agent Instructions
+# Hamrin.ai — AI Agent Instructions
+
+---
+
+## 🚨 BEFORE YOU FINISH ANY RESPONSE — RUN THIS CHECKLIST
+
+**Every single response that involves code, a module, or a feature MUST end with ALL of the following. No exceptions. No shortcuts.**
+
+| # | What | If missing |
+|---|---|---|
+| 1 | **"Your actions"** section — turn-by-turn walkthrough | VIOLATION — go back and add it |
+| 2 | **Commit checkpoint** — exact `git add . && git commit -m "..."` command | VIOLATION — go back and add it |
+| 3 | **Confidence rating** 1–10, flagged if below 7 | VIOLATION — go back and add it |
+| 4 | **Terminal commands** in order, copy-pasteable | VIOLATION — go back and add it |
+| 5 | **UI verification** — what to click and what to see on screen | VIOLATION — go back and add it |
+| 6 | **One likely failure** — exact error text + exact fix (file, line, what to change) | VIOLATION — go back and add it |
+
+---
 
 ## What this product is
-Lamrin.ai is a **Stripe Connect payment recovery SaaS**. Merchants connect their Stripe account via OAuth. When their customers' payments fail, lamrin automatically detects it, emails the customer, lets them update their card, and retries — recovering lost revenue. We charge 10% of recovered revenue (outcome pricing), $749 lifetime deal, or $99/month flat.
+Hamrin.ai is a **Stripe Connect payment recovery SaaS**. Merchants connect their Stripe account via OAuth. When their customers' payments fail, hamrin automatically detects it, emails the customer, lets them update their card, and retries — recovering lost revenue. We charge 10% of recovered revenue (outcome pricing), $749 lifetime deal, or $99/month flat.
 
 ## Core user journey
 1. Merchant connects Stripe -> OAuth -> `installations` table
@@ -55,6 +72,14 @@ src/
     validation.ts           # Zod schemas
   middleware.ts             # Security headers middleware
 ```
+
+---
+
+## Confidence and sourcing (MANDATORY)
+
+- **Never guess.** If not confident, say "I am not sure" and explain why.
+- **Rate confidence 1–10** after every substantive response; **flag** if below 7.
+- **Cite verified sources** for all numbers, statistics, claims about people/companies, and quotations (URL, doc, or project file). If no source, do not state as fact.
 
 ---
 

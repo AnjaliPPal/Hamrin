@@ -8,9 +8,6 @@ import type {
   BillingProvider,
   OAuthResult,
   CreateInstallationParams,
-  PaymentFailedParams,
-  ApplyDiscountParams,
-  PauseSubscriptionParams,
 } from "./types";
 
 /**

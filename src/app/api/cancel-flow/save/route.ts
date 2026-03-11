@@ -1,5 +1,6 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createConnectedStripeClient } from "@/lib/stripe";
 import { cancelFlowSaveSchema } from "@/lib/validation";
@@ -55,7 +56,8 @@ export async function POST(request: NextRequest) {
       where: { installationId: session.installationId },
     });
 
-    const offers = (config?.offers ?? []) as OfferConfig[];
+    // Prisma Json type: narrow via unknown before casting to our shape
+    const offers = (config?.offers ?? []) as unknown as OfferConfig[];
     const matchedOffer = offers.find((o) => o.type === offerType) ?? null;
 
     // Apply offer via Stripe using the merchant's connected account token
@@ -71,14 +73,14 @@ export async function POST(request: NextRequest) {
           duration: "repeating",
           duration_in_months: matchedOffer.discountMonths ?? 3,
           metadata: {
-            source: "lamrin_cancel_flow",
+            source: "hamrin_cancel_flow",
             session_id: sessionId,
           },
         });
 
         await stripeClient.subscriptions.update(
           session.stripeSubscriptionId,
-          { coupon: coupon.id }
+          { discounts: [{ coupon: coupon.id }] }
         );
 
         console.log(
@@ -99,6 +101,26 @@ export async function POST(request: NextRequest) {
           }
         );
 
+        // Module 4: record pause for Pause Wall and analytics
+        const now = new Date();
+        await prisma.pausedSubscription.upsert({
+          where: { stripeSubscriptionId: session.stripeSubscriptionId },
+          create: {
+            installationId: session.installationId,
+            stripeCustomerId: session.stripeCustomerId,
+            stripeSubscriptionId: session.stripeSubscriptionId,
+            pausedAt: now,
+            resumeAt: resumesAt,
+            pauseSource: "cancel_flow",
+          },
+          update: {
+            pausedAt: now,
+            resumeAt: resumesAt,
+            resumedAt: null,
+            pauseSource: "cancel_flow",
+          },
+        });
+
         console.log(
           `✅ Cancel flow save (pause): subscription=${session.stripeSubscriptionId} resumesAt=${resumesAt.toISOString()}`
         );
@@ -117,7 +139,9 @@ export async function POST(request: NextRequest) {
         offerType,
         offerShown: true,
         offerAccepted: true,
-        offerSnapshot: matchedOffer ?? null,
+        offerSnapshot: matchedOffer
+          ? (matchedOffer as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
         feedbackText,
         competitorName,
         savedAt: new Date(),
